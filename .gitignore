@@ -18,3 +18,8 @@ Thumbs.db
 # --- temp ---
 cbt/_check.js
 *.log
+
+# node (KaTeX는 CDN 사용, 로컬 테스트용)
+node_modules/
+package.json
+package-lock.json
