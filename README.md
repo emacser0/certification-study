@@ -30,5 +30,28 @@
 
 `android/README.md` 참고. Android Studio로 `android` 폴더를 열어 빌드하거나, SDK가 있으면 `gradle assembleDebug`.
 
+## 콘텐츠 OTA 업데이트 (앱 재설치 없이 갱신)
+
+앱은 실행 시 GitHub Pages의 `version.json`을 확인해, 더 새로운 콘텐츠가 있으면 화면 하단에
+**"지금 업데이트" 배너**를 띄웁니다. 탭하면 최신 `index.html`을 받아 내부저장소에 저장하고 즉시
+새로고침합니다(설치창 없음). 이미지는 APK에 번들된 것을 사용하므로 깨지지 않습니다.
+
+### 최초 1회 설정 — GitHub Pages 켜기
+1. 저장소를 GitHub에 푸시
+2. **Settings → Pages → Source: `Deploy from a branch` → `main` / `/docs`** 저장
+3. 잠시 후 `https://emacser0.github.io/embedded-certification-study/` 에서 `version.json`·`index.html` 제공됨
+   - 이 URL은 `MainActivity.kt`의 `BASE` 상수와 일치해야 합니다.
+
+### 콘텐츠 업데이트를 배포하는 방법 (APK 재빌드 불필요)
+1. `cbt/index.html` 수정
+2. `docs/index.html` 로 복사 (`cp cbt/index.html docs/index.html`)
+3. `docs/version.json` 의 `content` 값을 +1 (예: 1 → 2)
+4. `git add docs && git commit && git push`
+→ 다음 앱 실행 시 사용자에게 업데이트 배너가 뜸. (이미지를 새로 추가했다면 그 이미지는 APK 갱신이 필요)
+
+### 네이티브(Kotlin)·이미지가 바뀌는 경우
+콘텐츠 OTA로는 안 되고 **새 APK 배포**가 필요합니다. 이때 `MainActivity.kt`의 `BUNDLED_CONTENT` 를
+새 `content` 값으로 올려 빌드하면, 구버전 OTA본을 덮어쓰고 번들 콘텐츠가 우선 적용됩니다.
+
 ---
 데이터: 연도별 기출 + 2025 복원본 · 로컬 전용 학습 도구
