@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         /** Content version bundled in this APK's assets/index.html. Bump when you ship
          *  a new APK whose bundled HTML is newer than what OTA might have delivered. */
-        const val BUNDLED_CONTENT = 6
+        const val BUNDLED_CONTENT = 7
 
         /** GitHub Pages base that hosts version.json + index.html (+ images). */
         const val BASE = "https://emacser0.github.io/certification-study"
@@ -125,7 +125,8 @@ class MainActivity : AppCompatActivity() {
             try {
                 val vj = httpGet("$BASE/version.json?_=${System.currentTimeMillis()}")
                 val remote = if (vj != null) JSONObject(vj).optInt("content", 0) else 0
-                val html = httpGet("$BASE/index.html?_=${System.currentTimeMillis()}")
+                // 웹 진입점은 선택화면(index.html)이므로, 앱은 임베디드 앱 본체(embedded.html)를 받는다.
+                val html = httpGet("$BASE/embedded.html?_=${System.currentTimeMillis()}")
                 if (html == null || html.length < 1000) throw IllegalStateException("bad html")
                 File(filesDir, LOCAL_HTML).writeText(html)
                 if (remote > 0) prefs.edit().putInt(KEY_APPLIED, remote).apply()

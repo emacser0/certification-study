@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전기기사 필기 CBT</title>
+<style>
+  :root{
+    --bg:#f1f5f9; --panel:#ffffff; --panel2:#f8fafc; --line:#e2e8f0;
+    --txt:#1e293b; --muted:#64748b; --accent:#2563eb; --accent2:#1d4ed8;
+    --ok:#16a34a; --bad:#dc2626; --warn:#d97706; --chip:#f1f5f9;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:"Malgun Gothic","맑은 고딕",system-ui,-apple-system,sans-serif;line-height:1.6}
+  a{color:var(--accent)}
+  .wrap{max-width:980px;margin:0 auto;padding:16px}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:20}
+  header.top h1{font-size:17px;margin:0;cursor:pointer}
+  .top .meta{font-size:13px;color:var(--muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 14px;
+    font-size:14px;cursor:pointer;font-weight:600}
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  .btn.ok{background:var(--ok)} .btn.warn{background:var(--warn);color:#1a1a1a}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .setcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;
+    cursor:pointer;transition:.15s}
+  .setcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .setcard .t{font-weight:700;font-size:15px}
+  .setcard .s{color:var(--muted);font-size:12px;margin-top:6px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  .chip{display:inline-block;background:var(--chip);border:1px solid var(--line);
+    border-radius:999px;padding:2px 10px;font-size:12px;color:var(--muted)}
+  /* question */
+  .qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+  .qno{font-size:20px;font-weight:800}
+  .qbody{font-size:16px;margin:6px 0 14px}
+  .qbody img{max-width:100%;background:#fff;border-radius:8px;margin:8px 0;display:block}
+  .qbody pre{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;
+    overflow:auto;font-size:13px;color:#0f172a}
+  .qbody code{font-family:Consolas,monospace}
+  .qbody table{border-collapse:collapse;margin:8px 0;font-size:14px;width:auto}
+  .qbody th,.qbody td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+  .qbody th{background:var(--panel2)}
+  .qbody blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--accent);
+    background:var(--panel2);border-radius:0 8px 8px 0}
+  .qbody ul{margin:8px 0;padding-left:22px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;cursor:pointer;background:var(--panel2);transition:.12s}
+  .opt:hover{border-color:var(--accent)}
+  .opt .num{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .opt.sel{border-color:var(--accent);background:#dbeafe}
+  .opt.sel .num{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .opt.correct{border-color:var(--ok);background:#dcfce7}
+  .opt.correct .num{background:var(--ok);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#fee2e2}
+  .opt.wrong .num{background:var(--bad);color:#fff}
+  .feedback{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:14px;display:none}
+  .feedback.show{display:block}
+  .feedback.good{background:#dcfce7;border:1px solid var(--ok)}
+  .feedback.bad{background:#fee2e2;border:1px solid var(--bad)}
+  .expl{margin-top:8px;color:#475569;font-size:13.5px;white-space:pre-wrap}
+  /* omr */
+  .omr{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+  .omr .cell{aspect-ratio:1;border:1px solid var(--line);border-radius:7px;background:var(--panel2);
+    display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;font-weight:600}
+  .omr .cell:hover{border-color:var(--accent)}
+  .omr .cell.answered{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .omr .cell.cur{outline:2px solid #0f172a;outline-offset:1px}
+  .omr .cell.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .omr .cell.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .omr .cell.flag::after{content:"";position:relative}
+  .navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+  /* results */
+  .score{font-size:42px;font-weight:900}
+  .bar{height:10px;background:var(--panel2);border-radius:999px;overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%}
+  .subjrow{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:10px 0;border-bottom:1px solid var(--line)}
+  .tag{font-size:11px;padding:1px 8px;border-radius:6px}
+  .tag.pass{background:#dcfce7;color:var(--ok)} .tag.fail{background:#fee2e2;color:var(--bad)}
+  .hide{display:none!important}
+  .toggle{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+  .toggle input{width:16px;height:16px}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:24px}
+  @media(max-width:600px){.omr{grid-template-columns:repeat(6,1fr)}}
+  /* --- Tier 1 additions --- */
+  #themeBtn{padding:7px 10px;font-size:15px;line-height:1}
+  .bmk{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#94a3b8;padding:0 2px}
+  .bmk.on{color:#f59e0b}
+  .askbtn{background:none;border:0;font-size:18px;line-height:1;cursor:pointer;padding:0 2px;opacity:.85}
+  .askbtn:hover{opacity:1}
+  .askmenu{position:absolute;z-index:70;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:6px;min-width:172px}
+  .askmenu-h{font-size:11px;color:var(--muted);padding:6px 10px 4px}
+  .askmenu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--txt);
+    padding:9px 12px;border-radius:7px;font-size:14px;cursor:pointer}
+  .askmenu button:hover{background:var(--panel2)}
+  .askmenu-sep{height:1px;background:var(--line);margin:4px 0}
+  .concept-title{font-size:21px;font-weight:800;margin:8px 0 4px}
+  .concept-note{margin:6px 0}
+  .concept-list .setcard .t{font-size:14px}
+  /* 리치 노트/해설 렌더링 */
+  .exp-h{font-weight:800;margin-bottom:6px;color:var(--txt)}
+  .mdnote{white-space:normal;color:var(--txt);font-size:14.5px;line-height:1.8}
+  .concept-note.mdnote{font-size:15px}
+  .mdnote p{margin:0 0 10px}
+  .mdnote p:last-child{margin-bottom:0}
+  .mdnote ul{margin:8px 0;padding-left:20px}
+  .mdnote li{margin:4px 0}
+  .mdnote strong{color:var(--accent2);font-weight:700}
+  .mdnote code{background:var(--chip);border:1px solid var(--line);padding:1px 5px;border-radius:5px;
+    font-family:Consolas,monospace;font-size:.92em}
+  .mdnote .md-h{font-weight:800;font-size:1.02em;margin:14px 0 6px;color:var(--txt)}
+  .mdnote blockquote{margin:12px 0 2px;padding:10px 14px;background:var(--panel2);
+    border-left:3px solid var(--warn);border-radius:0 8px 8px 0}
+  html.dark .mdnote strong{color:#93c5fd}
+  .btn.small{padding:6px 11px;font-size:13px}
+  #updBar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--accent);color:#fff;
+    padding:12px 16px;display:none;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+    box-shadow:0 -4px 18px rgba(0,0,0,.2);font-size:14px}
+  #updBar.show{display:flex}
+  #updBar .btn{background:#fff;color:var(--accent);padding:7px 14px}
+  #updBar .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
+  #updBar .muted{color:#dbeafe;font-size:12px}
+  #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.2s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  #toast.show{opacity:.96;transform:translateX(-50%) translateY(0)}
+  .card.resume{border-color:var(--accent);background:linear-gradient(0deg,var(--panel),var(--panel))}
+  .omr .cell.flag{position:relative}
+  .omr .cell.flag::after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;
+    border-radius:50%;background:#f59e0b;box-shadow:0 0 0 1px var(--panel)}
+  /* dark theme */
+  html.dark{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#172033; --line:#334155;
+    --txt:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; --accent2:#2563eb;
+    --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --chip:#0b1220;
+  }
+  html.dark .opt.sel{background:#1e3a5f}
+  html.dark .opt.correct{background:#14331f}
+  html.dark .opt.wrong{background:#3b1717}
+  html.dark .feedback.good{background:#14331f}
+  html.dark .feedback.bad{background:#3b1717}
+  html.dark .qbody pre,html.dark .qbody code{background:#0b1220;color:#e2e8f0}
+  html.dark .qbody img{background:#e2e8f0}
+  html.dark .tag.pass{background:#14331f} html.dark .tag.fail{background:#3b1717}
+  .askbtn{display:none}
+  #home .card .row .toggle:has(#shuffleOpts){display:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 onclick="goHome()">⚡ 전기기사 필기 CBT</h1>
+  <div class="meta" id="topMeta"></div>
+  <button class="btn ghost" id="themeBtn" onclick="toggleTheme()" title="다크 모드 전환">🌙</button>
+</header>
+
+<div class="wrap">
+  <!-- HOME -->
+  <section id="home">
+    <div id="resumeBox"></div>
+    <div id="studyHomeBox"></div>
+    <div id="reviewBox"></div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><b>회차를 선택하세요</b> <span class="muted small">— 연도별 기출 / 2025 복원본</span></div>
+        <label class="toggle small"><input type="checkbox" id="practiceMode" checked> 연습 모드(즉시 정답 확인)</label>
+      </div>
+      <div class="row small" style="gap:18px;margin-top:10px;flex-wrap:wrap">
+        <label class="toggle"><input type="checkbox" id="shuffleOpts"> 보기 순서 섞기</label>
+        <label class="toggle">⏱ 실전 제한시간
+          <select id="timeLimit" style="padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--txt)">
+            <option value="0">없음</option><option value="30">30분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option>
+          </select>
+        </label>
+        <span class="muted" style="font-size:12px">제한시간은 실전 모드(연습 해제)에서 적용</span>
+      </div>
+      <div class="grid" id="setGrid" style="margin-top:14px"></div>
+    </div>
+    <div id="tier2Box"></div>
+    <div class="card">
+      <b>🎲 랜덤 모의고사</b>
+      <div class="muted small" style="margin:6px 0 12px">전체 문제에서 무작위로 출제 (정답이 있는 문제만)</div>
+      <div class="row">
+        <button class="btn" onclick="startRandom(20)">20문항</button>
+        <button class="btn" onclick="startRandom(40)">40문항</button>
+        <button class="btn" onclick="startRandom(80)">80문항</button>
+      </div>
+    </div>
+    <div class="card small muted" id="statBox"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="hide">
+    <div class="card">
+      <div class="qhead">
+        <span class="qno" id="qNo"></span>
+        <span class="row" style="gap:8px">
+          <span class="chip" id="qSubj"></span>
+          <button class="askbtn" id="askBtn" onclick="openAskMenu(event)" title="AI에게 질문 (GPT/Gemini/Claude)">🤖</button>
+          <button class="bmk" id="bmkBtn" onclick="toggleBookmark()" title="북마크 추가/해제">☆</button>
+        </span>
+      </div>
+      <div class="qbody" id="qBody"></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="feedback" id="qFeed"></div>
+      <div class="navbtns">
+        <button class="btn ghost" id="prevBtn" onclick="move(-1)">◀ 이전</button>
+        <div class="row">
+          <button class="btn ghost" onclick="clearAns()">선택해제</button>
+          <button class="btn ghost" onclick="goHome()">나가기</button>
+        </div>
+        <button class="btn" id="nextBtn" onclick="move(1)">다음 ▶</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <b>답안지(OMR)</b>
+        <button class="btn warn" onclick="submitQuiz()">제출 / 채점</button>
+      </div>
+      <div class="omr" id="omr"></div>
+    </div>
+  </section>
+
+  <!-- STUDY (개념 학습) -->
+  <section id="study" class="hide">
+    <div id="studyBox"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="hide">
+    <div class="card" id="scoreCard"></div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <b>📑 문제 리뷰</b>
+        <label class="toggle small"><input type="checkbox" id="wrongOnly" onchange="renderReview()"> 틀린 문제만</label>
+      </div>
+      <div id="review"></div>
+    </div>
+    <div id="studyNextWrap" class="row" style="justify-content:center;margin:4px 0"></div>
+    <div class="row" style="justify-content:center;margin:10px 0;gap:10px">
+      <button class="btn warn" onclick="retryWrong()">🔁 틀린 문제만 다시 풀기</button>
+      <button class="btn" onclick="goHome()">처음으로</button>
+    </div>
+  </section>
+</div>
+<footer>전기기사 필기 CBT · 데이터: 연도별 기출(전자문제집 CBT) · 로컬 전용</footer>
+
+<script>
+var DATA = {"questions":[{"id":1,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":1,"q":"![](electric/img/e20220424_q1.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":2,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":2,"q":"![](electric/img/e20220424_q2.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":3,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":3,"q":"![](electric/img/e20220424_q3.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":4,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":4,"q":"![](electric/img/e20220424_q4.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":5,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":5,"q":"![](electric/img/e20220424_q5.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":6,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":6,"q":"![](electric/img/e20220424_q6.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":7,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":7,"q":"![](electric/img/e20220424_q7.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":8,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":8,"q":"![](electric/img/e20220424_q8.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":9,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":9,"q":"![](electric/img/e20220424_q9.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":10,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":10,"q":"![](electric/img/e20220424_q10.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":11,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":11,"q":"![](electric/img/e20220424_q11.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":12,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":12,"q":"![](electric/img/e20220424_q12.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":13,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":13,"q":"![](electric/img/e20220424_q13.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":14,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":14,"q":"![](electric/img/e20220424_q14.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":15,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":16,"q":"![](electric/img/e20220424_q16.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":16,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":17,"q":"![](electric/img/e20220424_q17.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":17,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":18,"q":"![](electric/img/e20220424_q18.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":18,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":19,"q":"![](electric/img/e20220424_q19.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":19,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기자기학","num":20,"q":"![](electric/img/e20220424_q20.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":20,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":21,"q":"![](electric/img/e20220424_q21.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":21,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":22,"q":"![](electric/img/e20220424_q22.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":22,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":24,"q":"![](electric/img/e20220424_q24.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":23,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":25,"q":"![](electric/img/e20220424_q25.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":24,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":26,"q":"![](electric/img/e20220424_q26.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":25,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":27,"q":"![](electric/img/e20220424_q27.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":26,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":28,"q":"![](electric/img/e20220424_q28.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":27,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":29,"q":"![](electric/img/e20220424_q29.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":28,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":30,"q":"![](electric/img/e20220424_q30.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":29,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":31,"q":"![](electric/img/e20220424_q31.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":30,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":32,"q":"![](electric/img/e20220424_q32.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":31,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":33,"q":"![](electric/img/e20220424_q33.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":32,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":34,"q":"![](electric/img/e20220424_q34.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":33,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":35,"q":"![](electric/img/e20220424_q35.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":34,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":36,"q":"![](electric/img/e20220424_q36.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":35,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":37,"q":"![](electric/img/e20220424_q37.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":36,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":38,"q":"![](electric/img/e20220424_q38.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":37,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":39,"q":"![](electric/img/e20220424_q39.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":38,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전력공학","num":40,"q":"![](electric/img/e20220424_q40.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":39,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":41,"q":"![](electric/img/e20220424_q41.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":40,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":42,"q":"![](electric/img/e20220424_q42.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":41,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":43,"q":"![](electric/img/e20220424_q43.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":42,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":44,"q":"![](electric/img/e20220424_q44.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":43,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":45,"q":"![](electric/img/e20220424_q45.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":44,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":46,"q":"![](electric/img/e20220424_q46.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":45,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":47,"q":"![](electric/img/e20220424_q47.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":46,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":48,"q":"![](electric/img/e20220424_q48.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":47,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":49,"q":"![](electric/img/e20220424_q49.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":48,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":50,"q":"![](electric/img/e20220424_q50.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":49,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":51,"q":"![](electric/img/e20220424_q51.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":50,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":52,"q":"![](electric/img/e20220424_q52.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":51,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":53,"q":"![](electric/img/e20220424_q53.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":52,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":54,"q":"![](electric/img/e20220424_q54.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":53,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":55,"q":"![](electric/img/e20220424_q55.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":54,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":56,"q":"![](electric/img/e20220424_q56.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":55,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":57,"q":"![](electric/img/e20220424_q57.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":56,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":58,"q":"![](electric/img/e20220424_q58.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":57,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":59,"q":"![](electric/img/e20220424_q59.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":58,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기기기","num":60,"q":"![](electric/img/e20220424_q60.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":59,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":62,"q":"![](electric/img/e20220424_q62.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":60,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":63,"q":"![](electric/img/e20220424_q63.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":61,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":64,"q":"![](electric/img/e20220424_q64.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":62,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":65,"q":"![](electric/img/e20220424_q65.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":63,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":66,"q":"![](electric/img/e20220424_q66.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":64,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":68,"q":"![](electric/img/e20220424_q68.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":65,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":69,"q":"![](electric/img/e20220424_q69.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":66,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":71,"q":"![](electric/img/e20220424_q71.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":67,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":72,"q":"![](electric/img/e20220424_q72.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":68,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":73,"q":"![](electric/img/e20220424_q73.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":69,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":74,"q":"![](electric/img/e20220424_q74.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":70,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":76,"q":"![](electric/img/e20220424_q76.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":71,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":77,"q":"![](electric/img/e20220424_q77.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":72,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":79,"q":"![](electric/img/e20220424_q79.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":73,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"회로이론 및 제어공학","num":80,"q":"![](electric/img/e20220424_q80.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":74,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":81,"q":"![](electric/img/e20220424_q81.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":75,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":82,"q":"![](electric/img/e20220424_q82.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":76,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":83,"q":"![](electric/img/e20220424_q83.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":77,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":84,"q":"![](electric/img/e20220424_q84.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":78,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":85,"q":"![](electric/img/e20220424_q85.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":79,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":86,"q":"![](electric/img/e20220424_q86.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":80,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":87,"q":"![](electric/img/e20220424_q87.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":81,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":88,"q":"![](electric/img/e20220424_q88.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":82,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":89,"q":"![](electric/img/e20220424_q89.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":83,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":90,"q":"![](electric/img/e20220424_q90.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":84,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":91,"q":"![](electric/img/e20220424_q91.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":85,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":93,"q":"![](electric/img/e20220424_q93.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":86,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":94,"q":"![](electric/img/e20220424_q94.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":87,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":95,"q":"![](electric/img/e20220424_q95.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":88,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":96,"q":"![](electric/img/e20220424_q96.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":89,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":97,"q":"![](electric/img/e20220424_q97.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":90,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":98,"q":"![](electric/img/e20220424_q98.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":91,"setKey":"20220424","setLabel":"2022-04-24","year":2022,"subjectNorm":"전기설비기술기준 및 판단기준","num":99,"q":"![](electric/img/e20220424_q99.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":92,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":1,"q":"![](electric/img/e20210515_q1.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":93,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":2,"q":"![](electric/img/e20210515_q2.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":94,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":3,"q":"![](electric/img/e20210515_q3.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":95,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":4,"q":"![](electric/img/e20210515_q4.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":96,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":5,"q":"![](electric/img/e20210515_q5.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":97,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":6,"q":"![](electric/img/e20210515_q6.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":98,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":7,"q":"![](electric/img/e20210515_q7.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":99,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":9,"q":"![](electric/img/e20210515_q9.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":100,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":10,"q":"![](electric/img/e20210515_q10.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":101,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":11,"q":"![](electric/img/e20210515_q11.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":102,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":12,"q":"![](electric/img/e20210515_q12.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":103,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":13,"q":"![](electric/img/e20210515_q13.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":104,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":14,"q":"![](electric/img/e20210515_q14.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":105,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":15,"q":"![](electric/img/e20210515_q15.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":106,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":16,"q":"![](electric/img/e20210515_q16.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":107,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":18,"q":"![](electric/img/e20210515_q18.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":108,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":19,"q":"![](electric/img/e20210515_q19.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":109,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기자기학","num":20,"q":"![](electric/img/e20210515_q20.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":110,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":21,"q":"![](electric/img/e20210515_q21.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":111,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":22,"q":"![](electric/img/e20210515_q22.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":112,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":23,"q":"![](electric/img/e20210515_q23.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":113,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":24,"q":"![](electric/img/e20210515_q24.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":114,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":25,"q":"![](electric/img/e20210515_q25.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":115,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":26,"q":"![](electric/img/e20210515_q26.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":116,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":27,"q":"![](electric/img/e20210515_q27.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":117,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":28,"q":"![](electric/img/e20210515_q28.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":118,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":29,"q":"![](electric/img/e20210515_q29.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":119,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":30,"q":"![](electric/img/e20210515_q30.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":120,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":32,"q":"![](electric/img/e20210515_q32.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":121,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":33,"q":"![](electric/img/e20210515_q33.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":122,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":34,"q":"![](electric/img/e20210515_q34.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":123,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":35,"q":"![](electric/img/e20210515_q35.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":124,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":36,"q":"![](electric/img/e20210515_q36.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":125,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":37,"q":"![](electric/img/e20210515_q37.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":126,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":38,"q":"![](electric/img/e20210515_q38.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":127,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전력공학","num":39,"q":"![](electric/img/e20210515_q39.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":128,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":41,"q":"![](electric/img/e20210515_q41.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":129,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":42,"q":"![](electric/img/e20210515_q42.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":130,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":43,"q":"![](electric/img/e20210515_q43.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":131,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":44,"q":"![](electric/img/e20210515_q44.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":132,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":45,"q":"![](electric/img/e20210515_q45.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":133,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":46,"q":"![](electric/img/e20210515_q46.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":134,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":47,"q":"![](electric/img/e20210515_q47.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":135,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":48,"q":"![](electric/img/e20210515_q48.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":136,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":49,"q":"![](electric/img/e20210515_q49.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":137,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":50,"q":"![](electric/img/e20210515_q50.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":138,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":51,"q":"![](electric/img/e20210515_q51.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":139,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":52,"q":"![](electric/img/e20210515_q52.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":140,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":53,"q":"![](electric/img/e20210515_q53.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":141,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":54,"q":"![](electric/img/e20210515_q54.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":142,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":55,"q":"![](electric/img/e20210515_q55.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":143,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":56,"q":"![](electric/img/e20210515_q56.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":144,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":57,"q":"![](electric/img/e20210515_q57.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":145,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":58,"q":"![](electric/img/e20210515_q58.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":146,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":59,"q":"![](electric/img/e20210515_q59.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":147,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기기기","num":60,"q":"![](electric/img/e20210515_q60.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":148,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":61,"q":"![](electric/img/e20210515_q61.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":149,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":62,"q":"![](electric/img/e20210515_q62.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":150,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":63,"q":"![](electric/img/e20210515_q63.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":151,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":65,"q":"![](electric/img/e20210515_q65.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":152,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":66,"q":"![](electric/img/e20210515_q66.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":153,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":67,"q":"![](electric/img/e20210515_q67.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":154,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":68,"q":"![](electric/img/e20210515_q68.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":155,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":69,"q":"![](electric/img/e20210515_q69.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":156,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":71,"q":"![](electric/img/e20210515_q71.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":157,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":72,"q":"![](electric/img/e20210515_q72.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":158,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":73,"q":"![](electric/img/e20210515_q73.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":159,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":74,"q":"![](electric/img/e20210515_q74.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":160,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":75,"q":"![](electric/img/e20210515_q75.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":161,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":76,"q":"![](electric/img/e20210515_q76.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":162,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":77,"q":"![](electric/img/e20210515_q77.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":163,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":78,"q":"![](electric/img/e20210515_q78.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":164,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":79,"q":"![](electric/img/e20210515_q79.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":165,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"회로이론 및 제어공학","num":80,"q":"![](electric/img/e20210515_q80.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":166,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":81,"q":"![](electric/img/e20210515_q81.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":167,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":82,"q":"![](electric/img/e20210515_q82.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":168,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":83,"q":"![](electric/img/e20210515_q83.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":169,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":84,"q":"![](electric/img/e20210515_q84.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":170,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":85,"q":"![](electric/img/e20210515_q85.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":171,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":87,"q":"![](electric/img/e20210515_q87.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":172,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":88,"q":"![](electric/img/e20210515_q88.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":173,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":89,"q":"![](electric/img/e20210515_q89.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":174,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":90,"q":"![](electric/img/e20210515_q90.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":175,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":91,"q":"![](electric/img/e20210515_q91.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":176,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":92,"q":"![](electric/img/e20210515_q92.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":177,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":93,"q":"![](electric/img/e20210515_q93.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":178,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":94,"q":"![](electric/img/e20210515_q94.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":179,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":96,"q":"![](electric/img/e20210515_q96.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":180,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":97,"q":"![](electric/img/e20210515_q97.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":181,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":98,"q":"![](electric/img/e20210515_q98.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":182,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":99,"q":"![](electric/img/e20210515_q99.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":183,"setKey":"20210515","setLabel":"2021-05-15","year":2021,"subjectNorm":"전기설비기술기준 및 판단기준","num":100,"q":"![](electric/img/e20210515_q100.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":184,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":1,"q":"![](electric/img/e20200822_q1.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":185,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":2,"q":"![](electric/img/e20200822_q2.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":186,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":3,"q":"![](electric/img/e20200822_q3.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":187,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":4,"q":"![](electric/img/e20200822_q4.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":188,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":5,"q":"![](electric/img/e20200822_q5.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":189,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":7,"q":"![](electric/img/e20200822_q7.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":190,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":8,"q":"![](electric/img/e20200822_q8.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":191,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":9,"q":"![](electric/img/e20200822_q9.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":192,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":10,"q":"![](electric/img/e20200822_q10.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":193,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":11,"q":"![](electric/img/e20200822_q11.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":194,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":12,"q":"![](electric/img/e20200822_q12.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":195,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":13,"q":"![](electric/img/e20200822_q13.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":196,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":15,"q":"![](electric/img/e20200822_q15.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":197,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":16,"q":"![](electric/img/e20200822_q16.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":198,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":17,"q":"![](electric/img/e20200822_q17.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":199,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":18,"q":"![](electric/img/e20200822_q18.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":200,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":19,"q":"![](electric/img/e20200822_q19.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":201,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기자기학","num":20,"q":"![](electric/img/e20200822_q20.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":202,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":22,"q":"![](electric/img/e20200822_q22.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":203,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":23,"q":"![](electric/img/e20200822_q23.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":204,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":24,"q":"![](electric/img/e20200822_q24.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":205,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":25,"q":"![](electric/img/e20200822_q25.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":206,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":26,"q":"![](electric/img/e20200822_q26.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":207,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":27,"q":"![](electric/img/e20200822_q27.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":208,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":28,"q":"![](electric/img/e20200822_q28.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":209,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":30,"q":"![](electric/img/e20200822_q30.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":210,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":31,"q":"![](electric/img/e20200822_q31.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":211,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":32,"q":"![](electric/img/e20200822_q32.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":212,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":33,"q":"![](electric/img/e20200822_q33.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":213,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":34,"q":"![](electric/img/e20200822_q34.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":214,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":35,"q":"![](electric/img/e20200822_q35.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":215,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":36,"q":"![](electric/img/e20200822_q36.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":216,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":37,"q":"![](electric/img/e20200822_q37.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":217,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":39,"q":"![](electric/img/e20200822_q39.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":218,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전력공학","num":40,"q":"![](electric/img/e20200822_q40.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":219,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":41,"q":"![](electric/img/e20200822_q41.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":220,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":42,"q":"![](electric/img/e20200822_q42.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":221,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":43,"q":"![](electric/img/e20200822_q43.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":222,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":44,"q":"![](electric/img/e20200822_q44.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":223,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":45,"q":"![](electric/img/e20200822_q45.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":224,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":47,"q":"![](electric/img/e20200822_q47.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":225,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":48,"q":"![](electric/img/e20200822_q48.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":226,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":49,"q":"![](electric/img/e20200822_q49.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":227,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":50,"q":"![](electric/img/e20200822_q50.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":228,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":51,"q":"![](electric/img/e20200822_q51.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":229,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":52,"q":"![](electric/img/e20200822_q52.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":230,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":53,"q":"![](electric/img/e20200822_q53.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":231,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":54,"q":"![](electric/img/e20200822_q54.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":232,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":55,"q":"![](electric/img/e20200822_q55.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":233,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":56,"q":"![](electric/img/e20200822_q56.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":234,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":57,"q":"![](electric/img/e20200822_q57.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":235,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":59,"q":"![](electric/img/e20200822_q59.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":236,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기기기","num":60,"q":"![](electric/img/e20200822_q60.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":237,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":61,"q":"![](electric/img/e20200822_q61.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":238,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":62,"q":"![](electric/img/e20200822_q62.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":239,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":64,"q":"![](electric/img/e20200822_q64.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":240,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":65,"q":"![](electric/img/e20200822_q65.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":241,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":66,"q":"![](electric/img/e20200822_q66.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":242,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":67,"q":"![](electric/img/e20200822_q67.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":243,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":69,"q":"![](electric/img/e20200822_q69.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":244,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":70,"q":"![](electric/img/e20200822_q70.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":245,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":71,"q":"![](electric/img/e20200822_q71.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":246,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":72,"q":"![](electric/img/e20200822_q72.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":247,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":74,"q":"![](electric/img/e20200822_q74.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":248,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":75,"q":"![](electric/img/e20200822_q75.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":249,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":77,"q":"![](electric/img/e20200822_q77.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":250,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":78,"q":"![](electric/img/e20200822_q78.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":251,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":79,"q":"![](electric/img/e20200822_q79.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":252,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"회로이론 및 제어공학","num":80,"q":"![](electric/img/e20200822_q80.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":253,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":81,"q":"![](electric/img/e20200822_q81.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":254,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":82,"q":"![](electric/img/e20200822_q82.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":255,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":84,"q":"![](electric/img/e20200822_q84.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":256,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":85,"q":"![](electric/img/e20200822_q85.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":257,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":86,"q":"![](electric/img/e20200822_q86.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":258,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":87,"q":"![](electric/img/e20200822_q87.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":259,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":88,"q":"![](electric/img/e20200822_q88.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":260,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":89,"q":"![](electric/img/e20200822_q89.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":261,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":90,"q":"![](electric/img/e20200822_q90.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":262,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":91,"q":"![](electric/img/e20200822_q91.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":263,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":93,"q":"![](electric/img/e20200822_q93.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":264,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":94,"q":"![](electric/img/e20200822_q94.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":265,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":95,"q":"![](electric/img/e20200822_q95.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":266,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":96,"q":"![](electric/img/e20200822_q96.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":267,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":97,"q":"![](electric/img/e20200822_q97.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":268,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":98,"q":"![](electric/img/e20200822_q98.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":269,"setKey":"20200822","setLabel":"2020-08-22","year":2020,"subjectNorm":"전기설비기술기준 및 판단기준","num":100,"q":"![](electric/img/e20200822_q100.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":270,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":1,"q":"![](electric/img/e20190804_q1.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":271,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":2,"q":"![](electric/img/e20190804_q2.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":272,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":3,"q":"![](electric/img/e20190804_q3.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":273,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":4,"q":"![](electric/img/e20190804_q4.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":274,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":5,"q":"![](electric/img/e20190804_q5.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":275,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":6,"q":"![](electric/img/e20190804_q6.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":276,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":7,"q":"![](electric/img/e20190804_q7.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":277,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":8,"q":"![](electric/img/e20190804_q8.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":278,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":10,"q":"![](electric/img/e20190804_q10.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":279,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":11,"q":"![](electric/img/e20190804_q11.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":280,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":12,"q":"![](electric/img/e20190804_q12.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":281,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":13,"q":"![](electric/img/e20190804_q13.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":282,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":14,"q":"![](electric/img/e20190804_q14.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":283,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":15,"q":"![](electric/img/e20190804_q15.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":284,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":16,"q":"![](electric/img/e20190804_q16.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":285,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":18,"q":"![](electric/img/e20190804_q18.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":286,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":19,"q":"![](electric/img/e20190804_q19.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":287,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기자기학","num":20,"q":"![](electric/img/e20190804_q20.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":288,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":21,"q":"![](electric/img/e20190804_q21.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":289,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":22,"q":"![](electric/img/e20190804_q22.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":290,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":23,"q":"![](electric/img/e20190804_q23.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":291,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":24,"q":"![](electric/img/e20190804_q24.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":292,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":25,"q":"![](electric/img/e20190804_q25.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":293,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":26,"q":"![](electric/img/e20190804_q26.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":294,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":27,"q":"![](electric/img/e20190804_q27.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":295,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":28,"q":"![](electric/img/e20190804_q28.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":296,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":29,"q":"![](electric/img/e20190804_q29.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":297,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":30,"q":"![](electric/img/e20190804_q30.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":298,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":31,"q":"![](electric/img/e20190804_q31.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":299,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":32,"q":"![](electric/img/e20190804_q32.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":300,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":33,"q":"![](electric/img/e20190804_q33.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":301,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":34,"q":"![](electric/img/e20190804_q34.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":302,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":35,"q":"![](electric/img/e20190804_q35.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":303,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":36,"q":"![](electric/img/e20190804_q36.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":304,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":37,"q":"![](electric/img/e20190804_q37.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":305,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":38,"q":"![](electric/img/e20190804_q38.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":306,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":39,"q":"![](electric/img/e20190804_q39.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":307,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전력공학","num":40,"q":"![](electric/img/e20190804_q40.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":308,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":41,"q":"![](electric/img/e20190804_q41.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":309,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":42,"q":"![](electric/img/e20190804_q42.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":310,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":43,"q":"![](electric/img/e20190804_q43.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":311,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":44,"q":"![](electric/img/e20190804_q44.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":312,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":45,"q":"![](electric/img/e20190804_q45.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":313,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":46,"q":"![](electric/img/e20190804_q46.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":314,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":47,"q":"![](electric/img/e20190804_q47.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":315,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":49,"q":"![](electric/img/e20190804_q49.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":316,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":50,"q":"![](electric/img/e20190804_q50.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":317,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":51,"q":"![](electric/img/e20190804_q51.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":318,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":52,"q":"![](electric/img/e20190804_q52.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":319,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":53,"q":"![](electric/img/e20190804_q53.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":320,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":54,"q":"![](electric/img/e20190804_q54.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":321,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":55,"q":"![](electric/img/e20190804_q55.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":322,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":56,"q":"![](electric/img/e20190804_q56.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":323,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":57,"q":"![](electric/img/e20190804_q57.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":324,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":58,"q":"![](electric/img/e20190804_q58.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":325,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":59,"q":"![](electric/img/e20190804_q59.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":326,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기기기","num":60,"q":"![](electric/img/e20190804_q60.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":327,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":62,"q":"![](electric/img/e20190804_q62.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":328,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":63,"q":"![](electric/img/e20190804_q63.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":329,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":64,"q":"![](electric/img/e20190804_q64.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":330,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":66,"q":"![](electric/img/e20190804_q66.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":331,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":67,"q":"![](electric/img/e20190804_q67.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":332,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":68,"q":"![](electric/img/e20190804_q68.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":333,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":69,"q":"![](electric/img/e20190804_q69.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":334,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":70,"q":"![](electric/img/e20190804_q70.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":335,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":71,"q":"![](electric/img/e20190804_q71.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":336,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":72,"q":"![](electric/img/e20190804_q72.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":337,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":73,"q":"![](electric/img/e20190804_q73.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":338,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":74,"q":"![](electric/img/e20190804_q74.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":339,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":76,"q":"![](electric/img/e20190804_q76.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":340,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":77,"q":"![](electric/img/e20190804_q77.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":341,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":78,"q":"![](electric/img/e20190804_q78.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":342,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":79,"q":"![](electric/img/e20190804_q79.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":343,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"회로이론 및 제어공학","num":80,"q":"![](electric/img/e20190804_q80.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":344,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":81,"q":"![](electric/img/e20190804_q81.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":345,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":82,"q":"![](electric/img/e20190804_q82.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":346,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":83,"q":"![](electric/img/e20190804_q83.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":347,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":84,"q":"![](electric/img/e20190804_q84.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":348,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":85,"q":"![](electric/img/e20190804_q85.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":349,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":86,"q":"![](electric/img/e20190804_q86.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":350,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":87,"q":"![](electric/img/e20190804_q87.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":351,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":88,"q":"![](electric/img/e20190804_q88.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":352,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":89,"q":"![](electric/img/e20190804_q89.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":353,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":90,"q":"![](electric/img/e20190804_q90.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":354,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":91,"q":"![](electric/img/e20190804_q91.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":355,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":93,"q":"![](electric/img/e20190804_q93.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":356,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":94,"q":"![](electric/img/e20190804_q94.png)","opts":["","","",""],"ans":4,"exp":"","tag":""},{"id":357,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":95,"q":"![](electric/img/e20190804_q95.png)","opts":["","","",""],"ans":2,"exp":"","tag":""},{"id":358,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":96,"q":"![](electric/img/e20190804_q96.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":359,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":97,"q":"![](electric/img/e20190804_q97.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":360,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":98,"q":"![](electric/img/e20190804_q98.png)","opts":["","","",""],"ans":3,"exp":"","tag":""},{"id":361,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":99,"q":"![](electric/img/e20190804_q99.png)","opts":["","","",""],"ans":1,"exp":"","tag":""},{"id":362,"setKey":"20190804","setLabel":"2019-08-04","year":2019,"subjectNorm":"전기설비기술기준 및 판단기준","num":100,"q":"![](electric/img/e20190804_q100.png)","opts":["","","",""],"ans":2,"exp":"","tag":""}],"sets":[{"key":"20220424","label":"2022-04-24","count":91,"gradable":91},{"key":"20210515","label":"2021-05-15","count":92,"gradable":92},{"key":"20200822","label":"2020-08-22","count":86,"gradable":86},{"key":"20190804","label":"2019-08-04","count":93,"gradable":93}]};
+var ALL = DATA.questions, SETS = DATA.sets;
+var CIRC = ['①','②','③','④'];
+
+/* 과목별 개념 카드 {과목: [{title, note, qids}]}. 빌드 시 채워짐. */
+var CONCEPTS = {};
+/* 문제별 AI 해설 (id -> 해설 텍스트). 빌드 시 채워짐. */
+var AI_EXP = {};
+function expFor(q){
+  if(q.exp&&String(q.exp).trim()) return {text:q.exp, ai:false};
+  var a=(typeof AI_EXP!=='undefined')?AI_EXP[q.id]:null;
+  if(a&&String(a).trim()) return {text:a, ai:true};
+  return null;
+}
+
+/* ---------- Tier-1: persistence & review features ---------- */
+var QMAP={}; ALL.forEach(function(q){QMAP[q.id]=q;});
+var LS={
+  get:function(k){try{return JSON.parse(localStorage.getItem('cbt_'+k));}catch(e){return null;}},
+  set:function(k,v){try{localStorage.setItem('cbt_'+k,JSON.stringify(v));}catch(e){}},
+  del:function(k){try{localStorage.removeItem('cbt_'+k);}catch(e){}}
+};
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+/* 진행상황 자동저장 / 이어풀기 */
+function saveProgress(){
+  if(!S||S.submitted)return;
+  LS.set('progress',{ids:S.list.map(function(q){return q.id;}),answers:S.answers,idx:S.idx,mode:S.mode,label:S.label,start:S.start,kind:S.kind,perm:S.perm,limitSec:S.limitSec});
+}
+function clearProgress(){LS.del('progress');}
+function resumeProgress(){
+  var p=LS.get('progress'); if(!p||!p.ids)return;
+  var list=p.ids.map(function(id){return QMAP[id];}).filter(Boolean);
+  if(!list.length){clearProgress();renderHomeExtras();return;}
+  S={list:list,answers:p.answers||{},idx:Math.min(p.idx||0,list.length-1),mode:p.mode||'exam',label:p.label,submitted:false,start:p.start||Date.now(),kind:p.kind,perm:p.perm,limitSec:p.limitSec};
+  show('quiz'); renderQ(); startTimer();
+}
+function discardProgress(){if(confirm('진행 중인 풀이 기록을 삭제할까요?')){clearProgress();renderHomeExtras();}}
+
+/* 오답노트 (누적) */
+function markResult(q,correct){
+  if(!q||!q.ans)return;
+  var w=LS.get('wrong')||{};
+  if(correct)delete w[q.id]; else w[q.id]=1;
+  LS.set('wrong',w);
+}
+function startWrong(){
+  var w=LS.get('wrong')||{};
+  var list=Object.keys(w).map(function(id){return QMAP[id];}).filter(function(q){return q&&q.ans&&q.opts.length>=2;});
+  if(!list.length){alert('오답노트가 비어 있습니다.\n문제를 풀면 틀린 문제가 자동으로 쌓입니다.');return;}
+  beginQuiz(shuffle(list),'❌ 오답노트 복습 '+list.length+'문항',true,'wrong');
+}
+
+/* 북마크 */
+function isBmk(id){var b=LS.get('bookmarks')||{};return !!b[id];}
+function toggleBookmark(){
+  if(!S)return; var q=S.list[S.idx]; var b=LS.get('bookmarks')||{};
+  if(b[q.id])delete b[q.id]; else b[q.id]=1;
+  LS.set('bookmarks',b); updBmkBtn(); renderOMR();
+}
+function updBmkBtn(){
+  var btn=$('bmkBtn'); if(!btn||!S)return; var q=S.list[S.idx]; var on=isBmk(q.id);
+  btn.textContent=on?'★':'☆'; btn.classList.toggle('on',on);
+}
+function startBookmarks(){
+  var b=LS.get('bookmarks')||{};
+  var list=Object.keys(b).map(function(id){return QMAP[id];}).filter(Boolean);
+  if(!list.length){alert('북마크한 문제가 없습니다.\n문제 화면의 ☆ 버튼으로 추가할 수 있습니다.');return;}
+  beginQuiz(list,'⭐ 북마크 복습 '+list.length+'문항',false,'bookmark');
+}
+
+/* 결과창 → 틀린 문제만 다시 풀기 */
+function retryWrong(){
+  if(!S)return;
+  var list=S.list.filter(function(q){return q.ans&&q.opts.length>=2&&S.answers[q.id]!==q.ans;});
+  if(!list.length){alert('틀린 문제가 없습니다. 🎉');return;}
+  beginQuiz(list,'🔁 오답 다시풀기 '+list.length+'문항',false,'retry');
+}
+
+/* 다크 모드 */
+function applyTheme(){
+  var d=LS.get('theme')==='dark';
+  document.documentElement.classList.toggle('dark',d);
+  var b=$('themeBtn'); if(b)b.textContent=d?'☀️':'🌙';
+}
+function toggleTheme(){LS.set('theme',LS.get('theme')==='dark'?'light':'dark');applyTheme();}
+
+/* OTA 콘텐츠 업데이트 배너 (안드로이드 앱에서만 동작) */
+window.cbtUpdate={
+  show:function(v,notes){
+    var b=document.getElementById('updBar');
+    if(!b){b=document.createElement('div');b.id='updBar';document.body.appendChild(b);}
+    b.innerHTML='<span>🆕 새 버전(v'+v+')이 있습니다.</span>'+
+      (notes?('<span class="muted">'+esc(String(notes))+'</span>'):'')+
+      '<button class="btn" onclick="cbtUpdate.apply(this)">지금 업데이트</button>'+
+      '<button class="btn ghost" onclick="cbtUpdate.hide()">나중에</button>';
+    b.classList.add('show');
+  },
+  hide:function(){var b=document.getElementById('updBar'); if(b) b.classList.remove('show');},
+  apply:function(btn){
+    if(window.AndroidUpdater&&AndroidUpdater.applyUpdate){
+      if(btn){btn.textContent='업데이트 중…'; btn.disabled=true;}
+      AndroidUpdater.applyUpdate();
+    } else { alert('이 기능은 안드로이드 앱에서만 사용할 수 있습니다.'); }
+  },
+  fail:function(){
+    var b=document.getElementById('updBar');
+    if(b){var btn=b.querySelector('button'); if(btn){btn.textContent='지금 업데이트'; btn.disabled=false;}}
+    alert('업데이트에 실패했습니다. 네트워크 연결을 확인해 주세요.');
+  }
+};
+
+/* AI에 물어보기: 질문 형태로 클립보드 복사 */
+function stripImg(md){return String(md||'').replace(/!\[[^\]]*\]\([^)]*\)/g,'[이미지 생략]');}
+function buildAskPrompt(q){
+  var L=[];
+  L.push('다음 「임베디드기사 필기」 문제를 풀이해 주세요. 정답이 무엇인지, 왜 그 보기가 정답이고 나머지 보기는 왜 틀렸는지 근거와 함께 자세히 설명해 주세요.');
+  L.push('');
+  L.push('[문제] '+q.subjectNorm+(q.tag?(' · '+q.tag):'')+' · '+q.setLabel+' '+q.num+'번');
+  L.push(stripImg(q.q).trim());
+  if(q.opts&&q.opts.length){
+    L.push('');
+    q.opts.forEach(function(t,i){L.push(CIRC[i]+' '+stripImg(t).trim());});
+  } else {
+    L.push('');
+    L.push('(보기가 원본 이미지 안에 포함되어 텍스트로 제공되지 않습니다.)');
+  }
+  if(q.ans){
+    L.push('');
+    L.push('참고로 공개된 정답은 '+CIRC[q.ans-1]+' ('+q.ans+'번) 입니다. 이 정답이 타당한지 검증하고, 타당하다면 그 이유를 설명해 주세요.');
+  }
+  return L.join('\n');
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.textContent=msg; t.className='show';
+  clearTimeout(showToast._t); showToast._t=setTimeout(function(){t.className='';},1700);
+}
+function copyText(txt){
+  var ok=function(){showToast('📋 AI 질문이 복사되었습니다');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok,function(){fallbackCopy(txt,ok);});
+  } else { fallbackCopy(txt,ok); }
+}
+function fallbackCopy(txt,cb){
+  try{
+    var ta=document.createElement('textarea'); ta.value=txt;
+    ta.style.position='fixed'; ta.style.top='-9999px'; ta.setAttribute('readonly','');
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,txt.length);
+    document.execCommand('copy'); document.body.removeChild(ta); cb&&cb();
+  }catch(e){ alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해 주세요.'); }
+}
+function copyAsk(){ if(S) copyText(buildAskPrompt(S.list[S.idx])); }
+function copyAskId(id){ var q=QMAP[id]; if(q) copyText(buildAskPrompt(q)); }
+
+/* AI 서비스로 바로 질문 보내기 (GPT/Claude는 URL 프리필, Gemini는 복사+열기) */
+var AI_TARGETS={
+  gpt:{name:'ChatGPT', base:'https://chatgpt.com/', auto:true, q:function(p){return 'https://chatgpt.com/?q='+encodeURIComponent(p);}},
+  gemini:{name:'Gemini', base:'https://gemini.google.com/app', auto:false, q:null},
+  claude:{name:'Claude', base:'https://claude.ai/new', auto:true, q:function(p){return 'https://claude.ai/new?q='+encodeURIComponent(p);}}
+};
+function copyClip(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt)['catch'](function(){fallbackCopy(txt);}); }
+  else fallbackCopy(txt);
+}
+function openExternal(url){
+  if(window.AndroidBridge&&AndroidBridge.openUrl){ AndroidBridge.openUrl(url); }
+  else { window.open(url,'_blank'); }
+}
+function qFor(id){ return (id!=null&&id!=='null')?QMAP[id]:(S?S.list[S.idx]:null); }
+function askAI(provider,id){
+  closeAskMenu();
+  var q=qFor(id); if(!q) return;
+  var t=AI_TARGETS[provider]; if(!t) return;
+  var prompt=buildAskPrompt(q);
+  copyClip(prompt); // 항상 복사 (자동입력 실패/Gemini 대비)
+  var url=(t.auto&&t.q)?t.q(prompt):t.base;
+  if(t.auto&&url.length>7000){ url=t.base; showToast('📋 질문이 길어 복사만 했어요 — '+t.name+'에 붙여넣기'); }
+  else if(!t.auto){ showToast('📋 복사됨 — '+t.name+'에서 붙여넣기(Ctrl+V) 하세요'); }
+  openExternal(url);
+}
+function askAICopy(id){ var q=qFor(id); if(q) copyText(buildAskPrompt(q)); closeAskMenu(); }
+function closeAskMenu(){ var m=document.getElementById('askMenu'); if(m) m.remove(); }
+function openAskMenu(ev,id){
+  ev.stopPropagation();
+  if(document.getElementById('askMenu')){ closeAskMenu(); return; }
+  var arg=(id!=null)?id:'null';
+  var m=document.createElement('div'); m.id='askMenu'; m.className='askmenu';
+  m.innerHTML='<div class="askmenu-h">AI에게 질문하기</div>'+
+    '<button onclick="askAI(\'gpt\','+arg+')">💬 ChatGPT</button>'+
+    '<button onclick="askAI(\'gemini\','+arg+')">✨ Gemini</button>'+
+    '<button onclick="askAI(\'claude\','+arg+')">🟣 Claude</button>'+
+    '<div class="askmenu-sep"></div>'+
+    '<button onclick="askAICopy('+arg+')">📋 복사만</button>';
+  document.body.appendChild(m);
+  var r=ev.target.getBoundingClientRect();
+  var w=m.offsetWidth||172;
+  m.style.top=(r.bottom+window.scrollY+6)+'px';
+  m.style.left=Math.max(8,Math.min(r.left+window.scrollX, window.innerWidth-w-8))+'px';
+  setTimeout(function(){ document.addEventListener('click',closeAskMenu,{once:true}); },0);
+}
+
+/* ---------- Tier-2: stats / filters / search ---------- */
+function jsq(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+/* 누적 통계 (과목별 정답률) */
+function recordStat(q,correct){
+  if(!q||!q.ans)return;
+  var st=LS.get('stats')||{subj:{},total:{seen:0,correct:0}};
+  st.total.seen++; if(correct)st.total.correct++;
+  var s=q.subjectNorm||'기타';
+  st.subj[s]=st.subj[s]||{seen:0,correct:0};
+  st.subj[s].seen++; if(correct)st.subj[s].correct++;
+  LS.set('stats',st);
+}
+function resetStats(){ if(confirm('누적 학습 통계를 초기화할까요?')){LS.del('stats');renderHomeExtras();} }
+
+/* 과목/유형별 학습 */
+function startSubject(s){
+  var list=ALL.filter(function(q){return q.subjectNorm===s&&q.ans&&q.opts.length>=2;});
+  if(!list.length){alert('해당 과목의 채점가능 문제가 없습니다.');return;}
+  beginQuiz(shuffle(list),'🗂 '+s+' '+list.length+'문항',true,'subject');
+}
+function startTag(t){
+  var list=ALL.filter(function(q){return q.tag===t&&q.ans&&q.opts.length>=2;});
+  if(!list.length){alert('해당 유형의 채점가능 문제가 없습니다.');return;}
+  beginQuiz(shuffle(list),'🏷 '+t+' '+list.length+'문항',true,'tag');
+}
+
+/* 키워드 검색 */
+function doSearch(){
+  var kw=(($('searchInput')||{}).value||'').trim().toLowerCase();
+  if(!kw){return;}
+  var list=ALL.filter(function(q){
+    if(!(q.ans&&q.opts.length>=2))return false;
+    var hay=(q.q+' '+(q.opts||[]).join(' ')+' '+(q.exp||'')).toLowerCase();
+    return hay.indexOf(kw)>=0;
+  });
+  if(!list.length){ $('searchHint').textContent='“'+kw+'” 검색 결과가 없습니다.'; return; }
+  beginQuiz(list,'🔎 "'+kw+'" 검색 '+list.length+'문항',false,'search');
+}
+
+/* 홈: 통계 + 필터 + 검색 카드 */
+function renderTier2(){
+  var box=$('tier2Box'); if(!box)return;
+  var html='';
+  var st=LS.get('stats');
+  if(st&&st.total&&st.total.seen>0){
+    var tp=Math.round(st.total.correct/st.total.seen*100);
+    var subs=Object.keys(st.subj).map(function(k){var o=st.subj[k];return {k:k,p:Math.round(o.correct/o.seen*100),seen:o.seen};});
+    var weak=subs.filter(function(x){return x.seen>=3;}).sort(function(a,b){return a.p-b.p;}).slice(0,3);
+    html+='<div class="card"><div class="row" style="justify-content:space-between"><b>📊 누적 학습 통계</b>'
+      +'<button class="btn ghost small" onclick="resetStats()">초기화</button></div>'
+      +'<div class="muted small" style="margin:6px 0 4px">총 '+st.total.seen+'문항 시도 · 정답 '+st.total.correct+' · 정답률 <b style="color:var(--accent)">'+tp+'%</b></div>';
+    if(weak.length){
+      html+='<div class="small" style="margin-top:6px"><b>취약 과목</b> ';
+      weak.forEach(function(x){ var c=x.p>=60?'var(--ok)':x.p>=40?'var(--warn)':'var(--bad)'; html+='<span class="chip" style="margin:2px"><span style="color:'+c+'">'+esc(x.k)+' '+x.p+'%</span></span>'; });
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  var subjList={};
+  ALL.forEach(function(q){ if(q.ans&&q.opts.length>=2){ subjList[q.subjectNorm]=(subjList[q.subjectNorm]||0)+1; }});
+  html+='<div class="card"><b>🗂 과목별 학습</b><div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px">';
+  Object.keys(subjList).sort().forEach(function(s){ html+='<button class="btn ghost small" onclick="startSubject(\''+jsq(s)+'\')">'+esc(s)+' <span class="muted">'+subjList[s]+'</span></button>'; });
+  html+='</div></div>';
+  html+='<div class="card"><b>🔎 검색</b><div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
+    +'<input id="searchInput" placeholder="문제·보기·해설 키워드" style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--txt)" onkeydown="if(event.key===\'Enter\')doSearch()">'
+    +'<button class="btn" onclick="doSearch()">검색</button></div>'
+    +'<div class="muted small" id="searchHint" style="margin-top:8px"></div></div>';
+  box.innerHTML=html;
+}
+
+/* ---------- 학습 모드: 개념 정리 → 관련 문제 풀이 반복 ---------- */
+var STUDY=null;
+function renderStudyHome(){
+  var box=$('studyHomeBox'); if(!box) return;
+  var subs=Object.keys(CONCEPTS||{});
+  if(!subs.length){ box.innerHTML=''; return; }
+  var studied=LS.get('studied')||{};
+  var html='<div class="card"><b>📚 개념 학습</b> <span class="muted small">개념 정리 → 관련 문제 풀이 반복</span>'+
+    '<div class="grid concept-list" style="margin-top:12px">';
+  subs.forEach(function(s){
+    var n=CONCEPTS[s].length, done=Math.min((studied[s]||[]).length, n);
+    html+='<div class="setcard" onclick="startStudy(\''+jsq(s)+'\')"><div class="t">'+esc(s)+'</div>'+
+      '<div class="s">개념 '+n+'개 · 학습 '+done+'/'+n+'</div></div>';
+  });
+  box.innerHTML=html+'</div></div>';
+}
+function startStudy(subject, idx){
+  var list=(CONCEPTS||{})[subject]||[];
+  if(!list.length){ alert('해당 과목 개념이 아직 없습니다.'); return; }
+  STUDY={subject:subject, list:list, idx:(idx!=null?idx:0)};
+  showStudy();
+}
+function markStudied(subject, idx){
+  var st=LS.get('studied')||{}, arr=st[subject]||[];
+  if(arr.indexOf(idx)<0){ arr.push(idx); st[subject]=arr; LS.set('studied',st); }
+}
+function showStudy(){
+  if(!STUDY) return;
+  var c=STUDY.list[STUDY.idx], n=STUDY.list.length;
+  markStudied(STUDY.subject, STUDY.idx);
+  var qn=(c.qids||[]).filter(function(id){var q=QMAP[id]; return q&&q.ans&&q.opts.length>=2;}).length;
+  var html='<div class="card">'+
+    '<div class="row" style="justify-content:space-between;gap:8px">'+
+      '<span class="chip">'+esc(STUDY.subject)+' · 개념 '+(STUDY.idx+1)+'/'+n+'</span>'+
+      '<button class="btn ghost small" onclick="goHome()">목록</button></div>'+
+    '<div class="concept-title">'+esc(c.title)+'</div>'+
+    '<div class="concept-note mdnote">'+fmtNote(c.note)+'</div>'+
+    '<div class="row" style="margin-top:18px;justify-content:space-between;flex-wrap:wrap;gap:10px">'+
+      '<button class="btn ghost" onclick="studyNav(-1)"'+(STUDY.idx===0?' disabled':'')+'>◀ 이전</button>'+
+      '<button class="btn" onclick="studyQuiz()">📝 관련 문제 풀기 ('+qn+'문항)</button>'+
+      '<button class="btn ghost" onclick="studyNav(1)"'+(STUDY.idx>=n-1?' disabled':'')+'>다음 ▶</button>'+
+    '</div></div>';
+  $('studyBox').innerHTML=html;
+  $('topMeta').innerHTML='<span>📚 '+esc(STUDY.subject)+'</span>';
+  show('study'); try{window.scrollTo(0,0);}catch(e){}
+}
+function studyNav(d){ if(!STUDY)return; var k=STUDY.idx+d; if(k<0||k>=STUDY.list.length)return; STUDY.idx=k; showStudy(); }
+function studyQuiz(){
+  if(!STUDY)return;
+  var c=STUDY.list[STUDY.idx];
+  var list=(c.qids||[]).map(function(id){return QMAP[id];}).filter(function(q){return q&&q.ans&&q.opts.length>=2;});
+  if(!list.length){ alert('이 개념에 연결된 문제가 없습니다.'); return; }
+  var ctx={subject:STUDY.subject, idx:STUDY.idx};
+  beginQuiz(list, '📚 '+STUDY.subject+' · '+c.title, false, 'concept');
+  S.studyCtx=ctx;
+}
+function studyContinue(subject, idx){
+  var list=CONCEPTS[subject]||[];
+  if(idx>=list.length){ alert('「'+subject+'」 개념 학습을 모두 마쳤습니다! 🎉'); goHome(); return; }
+  startStudy(subject, idx);
+}
+
+/* 홈 화면: 이어풀기 + 복습 카드 */
+function renderHomeExtras(){
+  var p=LS.get('progress'), rb=$('resumeBox'); rb.innerHTML='';
+  if(p&&p.ids&&p.ids.length){
+    var done=Object.keys(p.answers||{}).length;
+    rb.innerHTML='<div class="card resume"><div class="row" style="justify-content:space-between;gap:10px">'+
+      '<div><b>⏯ 이어서 풀기</b><div class="muted small">'+esc(p.label||'')+' · '+done+'/'+p.ids.length+' 진행</div></div>'+
+      '<div class="row"><button class="btn" onclick="resumeProgress()">이어풀기</button>'+
+      '<button class="btn ghost" onclick="discardProgress()">삭제</button></div></div></div>';
+  }
+  var wn=Object.keys(LS.get('wrong')||{}).length;
+  var bn=Object.keys(LS.get('bookmarks')||{}).length;
+  $('reviewBox').innerHTML='<div class="card"><b>📌 복습</b>'+
+    '<div class="grid" style="margin-top:12px">'+
+    '<div class="setcard" onclick="startWrong()"><div class="t">❌ 오답노트</div><div class="s">'+wn+'문항 누적 · 다시풀기</div></div>'+
+    '<div class="setcard" onclick="startBookmarks()"><div class="t">⭐ 북마크</div><div class="s">'+bn+'문항</div></div>'+
+    '</div></div>';
+  renderStudyHome();
+  renderTier2();
+}
+
+/* ---------- markdown ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inlineMd(s){
+  var out='', re=/!\[([^\]]*)\]\(([^)]+)\)/g, last=0, m;
+  while((m=re.exec(s))){
+    out += esc(s.slice(last,m.index));
+    out += '<img alt="'+esc(m[1])+'" src="'+m[2]+'">';
+    last = re.lastIndex;
+  }
+  out += esc(s.slice(last));
+  return out;
+}
+/* 노트/해설 전용 리치 인라인: 굵게(**), 인라인 코드(`). 문제 보기엔 미적용(C 포인터 코드 보호) */
+function inlineRich(s){
+  return inlineMd(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+function mdToHtmlWith(md, inl){
+  if(!md) return '';
+  var lines = String(md).replace(/\r/g,'').split('\n'), i=0, html='';
+  while(i<lines.length){
+    var line=lines[i];
+    if(/^```/.test(line)){
+      var lang=line.slice(3).trim(), buf=[]; i++;
+      while(i<lines.length && !/^```/.test(lines[i])){buf.push(lines[i]);i++;}
+      i++;
+      html+='<pre><code>'+esc(buf.join('\n'))+'</code></pre>';
+    } else if(/^\s*\|.*\|\s*$/.test(line)){
+      var rows=[];
+      while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])){
+        rows.push(lines[i].trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(function(c){return c.trim();}));
+        i++;
+      }
+      var sep = rows.length>1 && rows[1].every(function(c){return /^-+$/.test(c.replace(/\s/g,''));});
+      html+='<table>';
+      rows.forEach(function(r,ri){
+        if(sep && ri===1) return;
+        var tag = (sep && ri===0)?'th':'td';
+        html+='<tr>'+r.map(function(c){return '<'+tag+'>'+inl(c)+'</'+tag+'>';}).join('')+'</tr>';
+      });
+      html+='</table>';
+    } else if(/^\s*>/.test(line)){
+      var buf=[];
+      while(i<lines.length && /^\s*>/.test(lines[i])){buf.push(lines[i].replace(/^\s*>\s?/,''));i++;}
+      html+='<blockquote>'+buf.map(inl).join('<br>')+'</blockquote>';
+    } else if(/^\s*#{1,6}\s+/.test(line)){
+      html+='<div class="md-h">'+inl(line.replace(/^\s*#{1,6}\s+/,''))+'</div>'; i++;
+    } else if(/^\s*[-*]\s+/.test(line)){
+      var buf=[];
+      while(i<lines.length && /^\s*[-*]\s+/.test(lines[i])){buf.push(lines[i].replace(/^\s*[-*]\s+/,''));i++;}
+      html+='<ul>'+buf.map(function(t){return '<li>'+inl(t)+'</li>';}).join('')+'</ul>';
+    } else if(line.trim()===''){
+      i++;
+    } else {
+      var buf=[];
+      while(i<lines.length && lines[i].trim()!=='' && !/^```|^\s*\||^\s*>|^\s*#{1,6}\s+|^\s*[-*]\s+/.test(lines[i])){
+        buf.push(lines[i]); i++;
+      }
+      html+='<p>'+buf.map(inl).join('<br>')+'</p>';
+    }
+  }
+  return html;
+}
+function mdToHtml(md){ return mdToHtmlWith(md, inlineMd); }
+function mdRich(md){ return mdToHtmlWith(md, inlineRich); }
+/* 해설 평문 → 가독성 마크다운: 정답 강조 + 암기팁 콜아웃 */
+function expToMd(t){
+  t=String(t||'').trim();
+  t=t.replace(/\s*(암기\s*(?:팁|포인트|법)[\s\S]*)$/, function(_,tip){ return '\n\n> 💡 '+tip.trim(); });
+  t=t.replace(/((?:따라서\s*)?정답은[^.]*\.)\s*/, '**$1**\n\n');
+  return t;
+}
+function fmtNote(md){ return mdRich(md); }
+function fmtExp(text){ return mdRich(expToMd(text)); }
+
+/* ---------- state ---------- */
+var S = null; // {list, answers{}, idx, mode, label, submitted}
+
+function $(id){return document.getElementById(id);}
+function show(sec){['home','quiz','results','study'].forEach(function(s){$(s).classList.toggle('hide', s!==sec);});}
+
+function goHome(){
+  if(S && !S.submitted && Object.keys(S.answers).length>0){
+    if(!confirm('진행 중인 시험이 있습니다. 나가시겠습니까?')) return;
+  }
+  S=null; renderHome(); show('home'); $('topMeta').innerHTML='';
+}
+
+function renderHome(){
+  var g=$('setGrid'); g.innerHTML='';
+  SETS.forEach(function(s){
+    var d=document.createElement('div'); d.className='setcard';
+    d.onclick=function(){startSet(s.key,s.label);};
+    d.innerHTML='<div class="t">'+s.label+'</div><div class="s">총 '+s.count+'문항 · 채점가능 '+s.gradable+'</div>';
+    g.appendChild(d);
+  });
+  var tot=ALL.length, grad=ALL.filter(function(q){return q.ans && q.opts.length>=2;}).length;
+  $('statBox').innerHTML='📊 전체 '+tot+'문항 · 채점가능 '+grad+'문항 · '+SETS.length+'개 세트 · 이미지 포함';
+  renderHomeExtras();
+}
+
+function startSet(key,label){
+  var list=ALL.filter(function(q){return q.setKey===key;});
+  beginQuiz(list,label,false);
+}
+function startRandom(n){
+  var pool=ALL.filter(function(q){return q.ans && q.opts.length>=2;}).slice();
+  for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  beginQuiz(pool.slice(0,n),'랜덤 모의고사 '+n+'문항',true);
+}
+function beginQuiz(list,label,shuffled,kind){
+  S={list:list, answers:{}, idx:0, mode: $('practiceMode').checked?'practice':'exam',
+     label:label, submitted:false, start:Date.now(), kind:kind||'set'};
+  // 보기 순서 섞기
+  if($('shuffleOpts')&&$('shuffleOpts').checked){
+    S.perm={};
+    list.forEach(function(q){ if(q.opts&&q.opts.length>1){ S.perm[q.id]=shuffle(q.opts.map(function(_,i){return i;})); } });
+  }
+  // 실전 제한시간 (실전 모드에서만)
+  var tl=$('timeLimit')?Number($('timeLimit').value):0;
+  if(S.mode==='exam'&&tl>0){ S.limitSec=tl*60; }
+  show('quiz'); renderQ(); startTimer(); saveProgress();
+}
+
+/* ---------- quiz render ---------- */
+var timer=null;
+function startTimer(){
+  if(timer) clearInterval(timer);
+  timer=setInterval(updMeta,1000); updMeta();
+}
+function updMeta(){
+  if(!S){return;}
+  var sec=Math.floor((Date.now()-S.start)/1000);
+  var ans=Object.keys(S.answers).length;
+  var timeStr;
+  if(S.limitSec && !S.submitted){
+    var rem=S.limitSec-sec;
+    if(rem<=0){
+      if(timer)clearInterval(timer);
+      S.limitSec=0; S.submitted=true; clearProgress();
+      alert('⏰ 제한시간이 종료되어 자동 제출합니다.');
+      renderResults(); return;
+    }
+    var rmm=String(Math.floor(rem/60)).padStart(2,'0'), rss=String(rem%60).padStart(2,'0');
+    timeStr='<span style="color:'+(rem<=60?'var(--bad)':'inherit')+';font-weight:700">⏳ '+rmm+':'+rss+'</span>';
+  } else {
+    var mm=String(Math.floor(sec/60)).padStart(2,'0'), ss=String(sec%60).padStart(2,'0');
+    timeStr='⏱ '+mm+':'+ss;
+  }
+  $('topMeta').innerHTML='<span>'+S.label+'</span><span>'+timeStr+'</span><span>'+ans+' / '+S.list.length+' 답함</span>';
+}
+function renderQ(){
+  var q=S.list[S.idx];
+  $('qNo').textContent='Q'+(S.idx+1)+'. ';
+  $('qSubj').textContent=q.subjectNorm + (q.tag? ' · '+q.tag : '') + ' · '+q.setLabel+' '+q.num+'번';
+  $('qBody').innerHTML=mdToHtml(q.q);
+  var sel=S.answers[q.id];
+  var revealed = S.submitted || (S.mode==='practice' && sel!=null);
+  var oc=$('qOpts'); oc.innerHTML='';
+  if(q.opts.length===0){
+    oc.innerHTML='<div class="muted small">※ 이 문제의 보기는 위 이미지 안에 표시됩니다 (텍스트 보기 없음).</div>';
+  }
+  var ord=(S.perm&&S.perm[q.id])?S.perm[q.id]:q.opts.map(function(_,i){return i;});
+  ord.forEach(function(origIdx,d){
+    var text=q.opts[origIdx]; var n=origIdx+1;
+    var div=document.createElement('div'); div.className='opt';
+    if(sel===n) div.classList.add('sel');
+    if(revealed){
+      if(q.ans===n) div.classList.add('correct');
+      else if(sel===n) div.classList.add('wrong');
+    }
+    div.innerHTML='<div class="num">'+CIRC[d]+'</div><div>'+inlineMd(text)+'</div>';
+    div.onclick=function(){ if(S.submitted) return;
+      if(S.mode==='practice' && S.answers[q.id]!=null) return; // lock after answer in practice
+      S.answers[q.id]=n;
+      if(S.mode==='practice'){ markResult(q, n===q.ans); recordStat(q, n===q.ans); }
+      saveProgress(); renderQ(); renderOMR(); updMeta();
+    };
+    oc.appendChild(div);
+  });
+  // feedback
+  var fb=$('qFeed'); fb.className='feedback';
+  if(revealed && q.ans){
+    if(sel===q.ans){ fb.classList.add('show','good'); fb.innerHTML='✅ 정답입니다.'; }
+    else if(sel!=null){ fb.classList.add('show','bad'); fb.innerHTML='❌ 오답 · 정답은 '+CIRC[q.ans-1]+' 입니다.'; }
+    else { fb.classList.add('show','bad'); fb.innerHTML='⚠ 미응답 · 정답은 '+CIRC[q.ans-1]+' 입니다.'; }
+    var ex=expFor(q);
+    if(ex) fb.innerHTML+='<div class="expl mdnote">'+(ex.ai?'<div class="exp-h">🤖 AI 해설</div>':'')+fmtExp(ex.text)+'</div>';
+  }
+  if(revealed && !q.ans){
+    fb.classList.add('show'); fb.style.background='var(--panel2)';
+    fb.innerHTML='<span class="muted">이 문제는 원본에 정답이 표기되어 있지 않습니다.</span>';
+  }
+  $('prevBtn').disabled = S.idx===0;
+  $('nextBtn').disabled = S.idx===S.list.length-1;
+  renderOMR();
+  updBmkBtn();
+  saveProgress();
+}
+function renderOMR(){
+  var o=$('omr'); o.innerHTML='';
+  S.list.forEach(function(q,k){
+    var c=document.createElement('div'); c.className='cell';
+    c.textContent=k+1;
+    if(S.answers[q.id]!=null) c.classList.add('answered');
+    if(isBmk(q.id)) c.classList.add('flag');
+    if(k===S.idx) c.classList.add('cur');
+    if(S.submitted && q.ans){
+      c.classList.remove('answered');
+      c.classList.add(S.answers[q.id]===q.ans?'ok':'no');
+    }
+    c.onclick=function(){S.idx=k;renderQ();};
+    o.appendChild(c);
+  });
+}
+function move(d){var n=S.idx+d; if(n<0||n>=S.list.length)return; S.idx=n; renderQ();}
+function clearAns(){var q=S.list[S.idx]; if(S.mode==='practice'&&S.submitted)return; delete S.answers[q.id]; renderQ(); updMeta();}
+
+/* ---------- submit / results ---------- */
+function submitQuiz(){
+  var unanswered=S.list.filter(function(q){return q.ans && q.opts.length>=2 && S.answers[q.id]==null;}).length;
+  if(unanswered>0 && !confirm('미응답 '+unanswered+'문항이 있습니다. 제출하시겠습니까?')) return;
+  S.submitted=true; if(timer)clearInterval(timer);
+  clearProgress();
+  renderResults();
+}
+function renderResults(){
+  var gradable=S.list.filter(function(q){return q.ans && q.opts.length>=2;});
+  gradable.forEach(function(q){
+    var correct=S.answers[q.id]===q.ans;
+    markResult(q, correct);
+    if(S.mode==='exam' && S.answers[q.id]!=null) recordStat(q, correct);
+  });
+  var correct=gradable.filter(function(q){return S.answers[q.id]===q.ans;}).length;
+  var pct = gradable.length? Math.round(correct/gradable.length*100):0;
+  // per subject
+  var subj={};
+  gradable.forEach(function(q){
+    var s=q.subjectNorm; subj[s]=subj[s]||{c:0,t:0};
+    subj[s].t++; if(S.answers[q.id]===q.ans) subj[s].c++;
+  });
+  var subjKeys=Object.keys(subj);
+  var anyFail=subjKeys.some(function(k){return subj[k].t>=5 && subj[k].c/subj[k].t<0.4;});
+  var passed = pct>=60 && !anyFail;
+  var sec=Math.floor((Date.now()-S.start)/1000);
+  var mm=Math.floor(sec/60), ss=sec%60;
+  var color = pct>=60?'var(--ok)':(pct>=40?'var(--warn)':'var(--bad)');
+  var html='<div class="row" style="justify-content:space-between;align-items:flex-end">'+
+    '<div><div class="muted">'+S.label+'</div><div class="score" style="color:'+color+'">'+pct+'점</div>'+
+    '<div class="muted small">'+correct+' / '+gradable.length+' 정답 · 소요 '+mm+'분 '+ss+'초</div></div>'+
+    '<div><span class="tag '+(passed?'pass':'fail')+'" style="font-size:15px;padding:6px 14px">'+
+       (passed?'합격 예상':'불합격 예상')+'</span></div></div>'+
+    '<div class="bar"><i style="width:'+pct+'%;background:'+color+'"></i></div>';
+  if(subjKeys.length>1){
+    html+='<div style="margin-top:16px"><b>과목별 결과</b> <span class="muted small">(과목 40% 미만 시 과락)</span>';
+    subjKeys.forEach(function(k){
+      var o=subj[k], p=Math.round(o.c/o.t*100), fail=o.t>=5&&p<40;
+      html+='<div class="subjrow"><span>'+k+'</span><span class="row"><span class="muted small">'+o.c+'/'+o.t+'</span>'+
+        '<b style="color:'+(p>=60?'var(--ok)':p>=40?'var(--warn)':'var(--bad)')+'">'+p+'%</b>'+
+        (fail?'<span class="tag fail">과락</span>':'')+'</span></div>';
+    });
+    html+='</div>';
+  }
+  $('scoreCard').innerHTML=html;
+  var snw=$('studyNextWrap');
+  if(snw){
+    if(S.studyCtx){
+      var subj2=S.studyCtx.subject, ni=S.studyCtx.idx+1, has=(CONCEPTS[subj2]||[])[ni];
+      snw.innerHTML='<button class="btn ok" onclick="studyContinue(\''+jsq(subj2)+'\','+ni+')">'+(has?'📚 다음 개념 학습 ▶':'📚 개념 학습 완료 — 목록으로')+'</button>';
+    } else snw.innerHTML='';
+  }
+  show('results'); renderReview();
+  $('topMeta').innerHTML='<span>'+S.label+'</span><span>채점 완료</span>';
+}
+function renderReview(){
+  var wrongOnly=$('wrongOnly').checked, box=$('review'); box.innerHTML='';
+  S.list.forEach(function(q,k){
+    var sel=S.answers[q.id], ok=(sel===q.ans);
+    if(wrongOnly && (ok || !q.ans)) return;
+    var d=document.createElement('div'); d.className='card'; d.style.margin='12px 0';
+    var head='<div class="qhead"><span class="qno" style="font-size:16px">Q'+(k+1)+'</span>'+
+      '<span class="row" style="gap:6px"><span class="chip">'+q.subjectNorm+' · '+q.setLabel+' '+q.num+'번'+
+      (q.ans? (ok?' · <span style="color:var(--ok)">정답</span>':' · <span style="color:var(--bad)">오답</span>') : ' · <span class="muted">정답없음</span>')+
+      '</span><button class="askbtn" onclick="openAskMenu(event,'+q.id+')" title="AI에게 질문 (GPT/Gemini/Claude)">🤖</button></span></div>';
+    var body='<div class="qbody">'+mdToHtml(q.q)+'</div><div class="opts">';
+    q.opts.forEach(function(t,oi){
+      var n=oi+1, cls='opt';
+      if(q.ans===n) cls+=' correct'; else if(sel===n) cls+=' wrong';
+      body+='<div class="'+cls+'"><div class="num">'+CIRC[oi]+'</div><div>'+inlineMd(t)+
+        (sel===n?' <span class="muted small">(내 선택)</span>':'')+'</div></div>';
+    });
+    body+='</div>';
+    var rex=expFor(q);
+    if(rex) body+='<div class="feedback show" style="background:var(--panel2)"><div class="exp-h">'+(rex.ai?'🤖 AI 해설':'해설')+'</div><div class="expl mdnote">'+fmtExp(rex.text)+'</div></div>';
+    d.innerHTML=head+body;
+    box.appendChild(d);
+  });
+  if(!box.children.length) box.innerHTML='<div class="muted small" style="padding:10px">표시할 문제가 없습니다. 🎉</div>';
+}
+
+/* keyboard */
+document.addEventListener('keydown',function(e){
+  if($('quiz').classList.contains('hide')||!S||S.submitted) return;
+  if(e.key==='ArrowLeft') move(-1);
+  else if(e.key==='ArrowRight') move(1);
+  else if(['1','2','3','4'].includes(e.key)){
+    var q=S.list[S.idx];
+    var p=Number(e.key)-1;
+    var ord=(S.perm&&S.perm[q.id])?S.perm[q.id]:null;
+    var origIdx=ord?ord[p]:p;
+    if(origIdx!=null && q.opts.length>origIdx && !(S.mode==='practice'&&S.answers[q.id]!=null)){
+      var n=origIdx+1;
+      S.answers[q.id]=n;
+      if(S.mode==='practice'){ markResult(q, n===q.ans); recordStat(q, n===q.ans); }
+      renderQ(); updMeta();
+    }
+  }
+});
+
+applyTheme();
+renderHome(); show('home');
+
+/* 서비스 워커 등록: 웹(https)에서 재배포 즉시 반영 + 오프라인. 앱(file://)에선 미등록 */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  try{
+    var __hadCtrl = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        if(nw) nw.addEventListener('statechange', function(){
+          // 이미 워커가 제어 중이던 페이지에 새 버전이 활성화되면 1회 새로고침
+          if(nw.state==='activated' && __hadCtrl){ location.reload(); }
+        });
+      });
+    })['catch'](function(){});
+  }catch(e){}
+}
+</script>
+</body>
+</html>
