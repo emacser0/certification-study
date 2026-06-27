@@ -12,8 +12,7 @@
   .wrap{max-width:760px;margin:0 auto;padding:48px 18px;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
   h1{font-size:26px;margin:0 0 6px;text-align:center}
   .sub{color:var(--muted);text-align:center;margin-bottom:32px;font-size:14px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
   .pick{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
     border-radius:18px;padding:30px 24px;transition:.18s;cursor:pointer}
   .pick:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
@@ -39,8 +38,14 @@
     <a class="pick" href="electric.html">
       <div class="emoji">⚡</div>
       <div class="t">전기기사</div>
-      <div class="d">연도별 기출(전자문제집 CBT) · 5과목 · 수식·회로도 그대로</div>
-      <span class="badge">프로토타입 · 4회차</span>
+      <div class="d">2013~2022 기출 29회차 · 5과목 · 수식 LaTeX 렌더 · AI 해설</div>
+      <span class="badge">2,898문항</span>
+    </a>
+    <a class="pick" href="gconsafety.html">
+      <div class="emoji">🦺</div>
+      <div class="t">건설안전기사</div>
+      <div class="d">기출(건시스템) · 6과목 · 텍스트 변환 · AI 해설</div>
+      <span class="badge">120문항</span>
     </a>
   </div>
   <footer>로컬 전용 학습 도구 · 진행기록은 종목별로 브라우저에 저장됩니다</footer>
