@@ -2,6 +2,8 @@ package com.embedded.cbt
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -21,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         /** Content version bundled in this APK's assets/index.html. Bump when you ship
          *  a new APK whose bundled HTML is newer than what OTA might have delivered. */
-        const val BUNDLED_CONTENT = 1
+        const val BUNDLED_CONTENT = 2
 
         /** GitHub Pages base that hosts version.json + index.html (+ images). */
         const val BASE = "https://emacser0.github.io/embedded-certification-study"
@@ -60,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.addJavascriptInterface(UpdaterBridge(), "AndroidUpdater")
+        webView.addJavascriptInterface(BrowserBridge(), "AndroidBridge")
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -163,6 +166,23 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun applyUpdate() {
             runOnUiThread { downloadAndApply() }
+        }
+    }
+
+    /** Exposed as `AndroidBridge`: open a URL in the external browser/app
+     *  so the WebView itself never navigates away from the CBT. */
+    inner class BrowserBridge {
+        @JavascriptInterface
+        fun openUrl(url: String) {
+            runOnUiThread {
+                try {
+                    val i = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(i)
+                } catch (_: Exception) {
+                    Toast.makeText(this@MainActivity, "브라우저를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
