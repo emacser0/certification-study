@@ -817,6 +817,22 @@ document.addEventListener('keydown',function(e){
 
 applyTheme();
 renderHome(); show('home');
+
+/* 서비스 워커 등록: 웹(https)에서 재배포 즉시 반영 + 오프라인. 앱(file://)에선 미등록 */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  try{
+    var __hadCtrl = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        if(nw) nw.addEventListener('statechange', function(){
+          // 이미 워커가 제어 중이던 페이지에 새 버전이 활성화되면 1회 새로고침
+          if(nw.state==='activated' && __hadCtrl){ location.reload(); }
+        });
+      });
+    })['catch'](function(){});
+  }catch(e){}
+}
 </script>
 </body>
 </html>
