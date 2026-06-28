@@ -10,11 +10,11 @@
 |---|---|---|---|---|---|
 | 📘 임베디드기사 | 733 | - | `cbt/index.html`에 인라인 | 712 | 개념 학습 모드 있음(50카드) |
 | ⚡ 전기기사 | 2,898 | 29 (2013~2022) | `docs/electric/` | 100% | LaTeX 수식(KaTeX) |
-| 🦺 건설안전기사 | 5,634 | 47 (2007~2022) | `docs/gconsafety/` | **53%(진행중)** | gunsys 포맷 |
+| 🦺 건설안전기사 | 5,634 | 47 (2007~2022) | `docs/gconsafety/` | 100% | gunsys 포맷 |
 
-- 배포 버전: **content/SW VERSION/BUNDLED_CONTENT/versionCode = 16** (v1.16). 전부 같이 올린다.
+- 배포 버전: **content/SW VERSION/BUNDLED_CONTENT/versionCode = 17** (v1.17). 전부 같이 올린다.
 - 웹: https://emacser0.github.io/certification-study/ (저장소 `emacser0/certification-study`, Pages = `main` `/docs`)
-- ⚠️ **미완료 작업**: 건설안전기사 AI 해설 ~47%가 세션 한도로 미생성. 해설 워크플로우 resume → 병합 → 빌드 필요. ([PIPELINE.md §해설](tools/PIPELINE.md) 참고)
+- 총 약 **9,265문항**(임베디드 733 + 전기 2,898 + 건설 5,634), 전 문항 AI 해설.
 
 ## 2. 아키텍처
 
@@ -67,7 +67,7 @@ docs/{electric,gconsafety}/{data.json, ai_exp.json, img/}  ← 종목 데이터 
 
 ## 6. 다음에 할 만한 일 (TODO)
 
-- [ ] **건설 해설 나머지 47% 완성** (resume → merge → build). [PIPELINE.md §해설](tools/PIPELINE.md)
+- [x] ~~건설 해설 나머지 완성~~ → 100% 완료(v1.17)
 - [ ] 호스팅 개선: 이미지 R2/CDN 분리, KaTeX 오프라인 번들(현재 CDN이라 첫 접속 시 인터넷 필요)
 - [ ] 앱(APK)에도 종목 선택 화면 번들(현재 앱은 임베디드 단독, 뒤로가기 버튼 없음)
 - [ ] AI 전사/해설 품질 점검(드물게 오타·오답 해설 가능)
