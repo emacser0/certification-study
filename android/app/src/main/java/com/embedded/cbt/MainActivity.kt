@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -56,6 +57,9 @@ class MainActivity : AppCompatActivity() {
                 if (url != null && url.startsWith("file://")) prefs.edit().putString("lastUrl", url).apply()
             }
         }
+
+        // JS 다이얼로그(alert/confirm/prompt) 기본 처리 — 없으면 goHome 등의 confirm()이 막힌다
+        webView.webChromeClient = WebChromeClient()
 
         webView.addJavascriptInterface(BrowserBridge(), "AndroidBridge")
 
