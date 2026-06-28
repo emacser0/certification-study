@@ -21,7 +21,7 @@ def fix_text(s):
     return re.sub(r'\$([^$]*)\$', lambda m: '$' + fix_matrices(m.group(1)) + '$', s)
 
 for rel, kind in [('docs/electric/data.json','data'), ('docs/electric/ai_exp.json','exp'),
-                  ('docs/gconsafety/data.json','data'), ('docs/gconsafety/ai_exp.json','exp')]:
+                  ('docs/consafety/data.json','data'), ('docs/consafety/ai_exp.json','exp')]:
     p = os.path.join(ROOT, rel)
     if not os.path.exists(p):
         continue

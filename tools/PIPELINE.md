@@ -40,7 +40,7 @@
 Workflow({ scriptPath: ".../workflows/scripts/explain-construction-all-wf_b34953ce-65f.js",
            resumeFromRunId: "wf_b34953ce-65f" })
 ```
-(스크립트/runId가 사라졌으면 `tools/PIPELINE.md`의 프롬프트로 새 워크플로우를 만들되, **이미 해설 있는 id는 제외**하고 청크 구성 — `docs/gconsafety/ai_exp.json` 키 제외.)
+(스크립트/runId가 사라졌으면 `tools/PIPELINE.md`의 프롬프트로 새 워크플로우를 만들되, **이미 해설 있는 id는 제외**하고 청크 구성 — `docs/consafety/ai_exp.json` 키 제외.)
 
 완료 후:
 ```python

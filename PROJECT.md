@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | 📘 임베디드기사 | 733 | - | `cbt/index.html`에 인라인 | 712 | 개념 학습 모드 있음(50카드) |
 | ⚡ 전기기사 | 2,898 | 29 (2013~2022) | `docs/electric/` | 100% | LaTeX 수식(KaTeX) |
-| 🦺 건설안전기사 | 5,634 | 47 (2007~2022) | `docs/gconsafety/` | 100% | gunsys 포맷 |
+| 🦺 건설안전기사 | 5,634 | 47 (2007~2022) | `docs/consafety/` | 100% | gunsys 포맷 |
 
 - 배포 버전: **content/SW VERSION/BUNDLED_CONTENT/versionCode = 17** (v1.17). 전부 같이 올린다.
 - 웹: https://emacser0.github.io/certification-study/ (저장소 `emacser0/certification-study`, Pages = `main` `/docs`)
@@ -25,14 +25,14 @@ cbt/index.html        ← 단일 자립형 CBT 템플릿(임베디드 데이터 
    │
    ├─ (그대로) → docs/embedded.html        (웹 임베디드, +뒤로가기버튼)
    ├─ tools/build_pages.py 로 데이터 교체 → docs/electric.html   (NS=elec_, +KaTeX, +뒤로가기)
-   │                                      → docs/gconsafety.html (NS=cons_, +KaTeX, +뒤로가기)
+   │                                      → docs/consafety.html (NS=cons_, +KaTeX, +뒤로가기)
    └─ docs/ 전체를 android/app/.../assets/ 로 복사 → APK도 웹처럼 선택화면→3종 CBT 오프라인
       (앱: file:///android_asset/index.html 로드, 멀티페이지 내비게이션. assets는 .gitignore=빌드 시 복사)
 
-docs/index.html       ← 종목 선택 랜딩(셀렉터). embedded/electric/gconsafety.html 로 링크.
+docs/index.html       ← 종목 선택 랜딩(셀렉터). embedded/electric/consafety.html 로 링크.
 docs/sw.js            ← 서비스워커(network-first, 캐시 우회). VERSION 바꾸면 재배포 반영.
 docs/version.json     ← OTA 버전. 앱이 이걸 보고 업데이트 배너 표시.
-docs/{electric,gconsafety}/{data.json, ai_exp.json, img/}  ← 종목 데이터 + 해설 + 그림크롭
+docs/{electric,consafety}/{data.json, ai_exp.json, img/}  ← 종목 데이터 + 해설 + 그림크롭
 ```
 
 - **데이터 형식** (`data.json`): `{questions:[{id,setKey,setLabel,year,subjectNorm,num,q,opts[4],ans,exp,tag}], sets:[...]}`
@@ -44,7 +44,7 @@ docs/{electric,gconsafety}/{data.json, ai_exp.json, img/}  ← 종목 데이터 
 
 1. `cbt/index.html` 또는 `docs/*/data.json`·`ai_exp.json` 수정
 2. `python tools/fix_math.py && python tools/fix_matrix.py`  ← **AI가 만든 LaTeX는 반드시 새너타이즈**(과다 백슬래시→이탤릭 깨짐 방지)
-3. `python tools/build_pages.py`  ← docs/embedded·electric·gconsafety.html 재생성
+3. `python tools/build_pages.py`  ← docs/embedded·electric·consafety.html 재생성
 4. `cp cbt/index.html android/app/src/main/assets/index.html`  (임베디드 본체 바뀐 경우)
 5. `docs/version.json` content +1, `docs/sw.js` VERSION +1, `android/app/build.gradle` versionCode/Name +1, `MainActivity.kt` BUNDLED_CONTENT +1  ← **다 같이**
 6. APK 빌드(아래) → `git add -A && commit && push`

@@ -5,7 +5,7 @@ import fitz
 from extract_v2 import process_v2
 
 CROOT = r'C:\Users\emacser\Desktop\playground\embeded\construction-safety'
-IMGOUT = r'C:\Users\emacser\Desktop\playground\embeded\docs\gconsafety\img'
+IMGOUT = r'C:\Users\emacser\Desktop\playground\embeded\docs\consafety\img'
 STAGE = os.path.join(os.path.dirname(__file__), 'cons_new_questions.json')
 DONE = {'20220424'}
 
@@ -76,7 +76,7 @@ def label_of(d):
 if __name__ == '__main__':
     test = len(sys.argv) > 1 and sys.argv[1] == 'test'
     pdfs = sorted(f for f in os.listdir(CROOT) if f.endswith('.pdf'))
-    pdfs = [f for f in pdfs if f[len('gconsafety_'):-4] not in DONE]
+    pdfs = [f for f in pdfs if f[len('consafety_'):-4] not in DONE]
     if test:
         for f in pdfs[:1] + pdfs[len(pdfs)//2:len(pdfs)//2+1] + pdfs[-1:]:
             pdf = os.path.join(CROOT, f)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     all_new = []; qid = 6000; summary = []
     STD = ['산업안전관리론', '산업심리 및 교육', '인간공학 및 시스템안전공학', '건설시공학', '건설재료학', '건설안전기술']
     for f in pdfs:
-        date = f[len('gconsafety_'):-4]
+        date = f[len('consafety_'):-4]
         pdf = os.path.join(CROOT, f)
         try:
             ans = parse_answers(pdf)

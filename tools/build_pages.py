@@ -95,12 +95,12 @@ nq, sets = make_app(
 print('electric:', nq, 'questions,', len(sets), 'sets')
 
 # 건설안전기사
-cpath = os.path.join(ROOT, 'docs', 'gconsafety', 'data.json')
+cpath = os.path.join(ROOT, 'docs', 'consafety', 'data.json')
 if os.path.exists(cpath):
     nq, sets = make_app(
-        cpath, os.path.join(ROOT, 'docs', 'gconsafety.html'), 'cons_',
+        cpath, os.path.join(ROOT, 'docs', 'consafety.html'), 'cons_',
         '건설안전기사 필기 CBT', '🦺 건설안전기사 필기 CBT',
         '건설안전기사 필기 CBT · 데이터: 기출(건시스템 gunsys.com) · 로컬 전용',
-        ai_exp_path=os.path.join(ROOT, 'docs', 'gconsafety', 'ai_exp.json'),
-        concepts_path=os.path.join(ROOT, 'docs', 'gconsafety', 'concepts.json'))
+        ai_exp_path=os.path.join(ROOT, 'docs', 'consafety', 'ai_exp.json'),
+        concepts_path=os.path.join(ROOT, 'docs', 'consafety', 'concepts.json'))
     print('construction:', nq, 'questions,', len(sets), 'sets')

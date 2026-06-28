@@ -4,7 +4,7 @@
 ```bash
 cd <repo>
 python tools/build_pages.py
-# → docs/embedded.html, docs/electric.html, docs/gconsafety.html 재생성
+# → docs/embedded.html, docs/electric.html, docs/consafety.html 재생성
 #    (cbt/index.html 템플릿 + docs/*/data.json + ai_exp.json 주입, NS·KaTeX·뒤로가기버튼 포함)
 ```
 - `build_pages.py`의 `ROOT` 절대경로가 이 PC 기준. 다른 PC면 수정.
@@ -14,11 +14,11 @@ python tools/build_pages.py
 앱은 docs 웹 전체를 assets로 번들(선택화면→3종 CBT 오프라인). **빌드 전 docs→assets 복사 필수**:
 ```bash
 A=android/app/src/main/assets
-rm -rf "$A" && mkdir -p "$A/electric" "$A/gconsafety"
-cp docs/index.html docs/embedded.html docs/electric.html docs/gconsafety.html docs/changelog.html "$A/"
+rm -rf "$A" && mkdir -p "$A/electric" "$A/consafety"
+cp docs/index.html docs/embedded.html docs/electric.html docs/consafety.html docs/changelog.html "$A/"
 cp -r docs/images "$A/images"
 cp -r docs/electric/img "$A/electric/img"
-cp -r docs/gconsafety/img "$A/gconsafety/img"
+cp -r docs/consafety/img "$A/consafety/img"
 cp -r docs/vendor "$A/vendor"
 # (sw.js/data.json은 불필요 — 페이지에 데이터 인라인, 오프라인이라 SW 미사용)
 

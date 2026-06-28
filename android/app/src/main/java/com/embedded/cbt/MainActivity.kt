@@ -26,7 +26,7 @@ import java.security.MessageDigest
 
 /**
  * 자격증 CBT — docs 웹 번들을 assets 에 담아 오프라인으로 제공.
- * index.html(종목 선택) → embedded/electric/gconsafety.html 멀티페이지.
+ * index.html(종목 선택) → embedded/electric/consafety.html 멀티페이지.
  *
  * OTA(앱 재배포 없이 콘텐츠 갱신): 페이지는 여전히 file:///android_asset/ 에서 로드하되,
  * shouldInterceptRequest 에서 filesDir/web/<경로> 에 받아둔 파일이 있으면 그걸 우선 서빙한다.

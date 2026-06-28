@@ -37,8 +37,8 @@ preview = len(sys.argv) > 1 and sys.argv[1] == 'preview'
 targets = [
     ('docs/electric/data.json', 'data'),
     ('docs/electric/ai_exp.json', 'exp'),
-    ('docs/gconsafety/data.json', 'data'),
-    ('docs/gconsafety/ai_exp.json', 'exp'),
+    ('docs/consafety/data.json', 'data'),
+    ('docs/consafety/ai_exp.json', 'exp'),
 ]
 for rel, kind in targets:
     path = os.path.join(ROOT, rel)

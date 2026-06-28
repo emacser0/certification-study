@@ -3,8 +3,8 @@ import json, glob, os
 from PIL import Image
 
 SC = r'C:\Users\emacser\AppData\Local\Temp\claude\C--Users-emacser-Desktop-playground-embeded\aa9f1027-c09c-4b01-9573-d24bf6945175\scratchpad'
-IMGDIR = r'C:\Users\emacser\Desktop\playground\embeded\docs\gconsafety\img'
-DATA = r'C:\Users\emacser\Desktop\playground\embeded\docs\gconsafety\data.json'
+IMGDIR = r'C:\Users\emacser\Desktop\playground\embeded\docs\consafety\img'
+DATA = r'C:\Users\emacser\Desktop\playground\embeded\docs\consafety\data.json'
 
 new = json.load(open(os.path.join(SC, 'cons_new_questions.json'), encoding='utf-8'))
 tx = {}
@@ -50,11 +50,11 @@ for q in new:
             ff = crop_fig(q['img'], fb) if (fb and isinstance(fb, list) and len(fb) == 4) else None
             if not ff:
                 ff = q['img']
-            b['q'] = stem + '\n\n![](gconsafety/img/' + ff + ')'; b['opts'] = opts[:4]; mix_n += 1
+            b['q'] = stem + '\n\n![](consafety/img/' + ff + ')'; b['opts'] = opts[:4]; mix_n += 1
         else:
             b['q'] = stem; b['opts'] = opts[:4]; text_n += 1
     else:
-        b['q'] = '![](gconsafety/img/' + q['img'] + ')'; b['opts'] = ['', '', '', '']; img_n += 1
+        b['q'] = '![](consafety/img/' + q['img'] + ')'; b['opts'] = ['', '', '', '']; img_n += 1
     new_q.append(b)
 
 # merge with existing (20220424, 120 questions)
@@ -74,8 +74,8 @@ json.dump({'questions': all_q, 'sets': sets}, open(DATA, 'w', encoding='utf-8'),
 used = set()
 for q in all_q:
     for p in q['q'].split('!['):
-        if '](gconsafety/img/' in p:
-            used.add(p.split('](gconsafety/img/')[1].split(')')[0])
+        if '](consafety/img/' in p:
+            used.add(p.split('](consafety/img/')[1].split(')')[0])
 rm = 0
 for f in os.listdir(IMGDIR):
     if f not in used:
