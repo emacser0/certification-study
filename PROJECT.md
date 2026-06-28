@@ -26,7 +26,8 @@ cbt/index.html        ← 단일 자립형 CBT 템플릿(임베디드 데이터 
    ├─ (그대로) → docs/embedded.html        (웹 임베디드, +뒤로가기버튼)
    ├─ tools/build_pages.py 로 데이터 교체 → docs/electric.html   (NS=elec_, +KaTeX, +뒤로가기)
    │                                      → docs/gconsafety.html (NS=cons_, +KaTeX, +뒤로가기)
-   └─ android/app/.../assets/index.html = cbt/index.html 복사본 (APK는 임베디드 단독)
+   └─ docs/ 전체를 android/app/.../assets/ 로 복사 → APK도 웹처럼 선택화면→3종 CBT 오프라인
+      (앱: file:///android_asset/index.html 로드, 멀티페이지 내비게이션. assets는 .gitignore=빌드 시 복사)
 
 docs/index.html       ← 종목 선택 랜딩(셀렉터). embedded/electric/gconsafety.html 로 링크.
 docs/sw.js            ← 서비스워커(network-first, 캐시 우회). VERSION 바꾸면 재배포 반영.
@@ -67,7 +68,9 @@ docs/{electric,gconsafety}/{data.json, ai_exp.json, img/}  ← 종목 데이터 
 
 ## 6. 다음에 할 만한 일 (TODO)
 
-- [x] ~~건설 해설 나머지 완성~~ → 100% 완료(v1.17)
-- [ ] 호스팅 개선: 이미지 R2/CDN 분리, KaTeX 오프라인 번들(현재 CDN이라 첫 접속 시 인터넷 필요)
-- [ ] 앱(APK)에도 종목 선택 화면 번들(현재 앱은 임베디드 단독, 뒤로가기 버튼 없음)
+- [x] ~~건설 해설 나머지 완성~~ → 100%(v1.17)
+- [x] ~~KaTeX 오프라인 번들~~ → docs/vendor/katex, 웹/앱 모두 로컬(v1.18). CDN 의존 제거.
+- [x] ~~앱에 종목 선택 화면~~ → 앱이 docs 번들 멀티페이지(v1.18). 이름 '자격증 CBT'.
+- [ ] 이미지 R2/CDN 분리(repo가 docs 이미지로 ~20MB+. 호스팅 개선 시)
+- [ ] 앱 OTA 재설계(멀티페이지 번들이라 현재 OTA 없음 — 업데이트는 APK 재설치/웹)
 - [ ] AI 전사/해설 품질 점검(드물게 오타·오답 해설 가능)

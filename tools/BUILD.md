@@ -11,9 +11,16 @@ python tools/build_pages.py
 - 임베디드 데이터는 `cbt/index.html`에 인라인이라 build_pages가 그대로 복사(+뒤로가기).
 
 ## APK 빌드
+앱은 docs 웹 전체를 assets로 번들(선택화면→3종 CBT 오프라인). **빌드 전 docs→assets 복사 필수**:
 ```bash
-# 임베디드 본체가 바뀌었으면 먼저 동기화
-cp cbt/index.html android/app/src/main/assets/index.html
+A=android/app/src/main/assets
+rm -rf "$A" && mkdir -p "$A/electric" "$A/gconsafety"
+cp docs/index.html docs/embedded.html docs/electric.html docs/gconsafety.html "$A/"
+cp -r docs/images "$A/images"
+cp -r docs/electric/img "$A/electric/img"
+cp -r docs/gconsafety/img "$A/gconsafety/img"
+cp -r docs/vendor "$A/vendor"
+# (sw.js/version.json/data.json은 불필요 — 페이지에 데이터 인라인, 오프라인이라 SW 미사용)
 
 # Android SDK/Gradle (이 PC 설치 위치)
 ANDROID_HOME=C:\Android\sdk  "C:\Android\gradle-8.9\bin\gradle.bat" \
