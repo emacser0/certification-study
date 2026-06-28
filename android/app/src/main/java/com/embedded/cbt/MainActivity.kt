@@ -1,6 +1,7 @@
 package com.embedded.cbt
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -13,11 +14,12 @@ import androidx.appcompat.app.AppCompatActivity
 
 /**
  * 자격증 CBT — docs 웹 번들을 assets에 담아 오프라인으로 제공.
- * index.html(종목 선택) → embedded/electric/gconsafety.html 멀티페이지 내비게이션.
+ * index.html(종목 선택) → embedded/electric/gconsafety.html 멀티페이지.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private val prefs by lazy { getSharedPreferences("cbt", Context.MODE_PRIVATE) }
 
     companion object {
         const val START_URL = "file:///android_asset/index.html"
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.settings.apply {
             javaScriptEnabled = true
-            domStorageEnabled = true          // localStorage (종목별 NS로 분리)
+            domStorageEnabled = true
             loadWithOverviewMode = true
             useWideViewPort = true
             allowFileAccess = true
@@ -42,32 +44,42 @@ class MainActivity : AppCompatActivity() {
             textZoom = 100
         }
 
-        // 같은 출처(file://asset)는 WebView가 처리, 외부 링크는 외부 브라우저로
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
                 if (url.startsWith("file://")) return false
                 return try {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    true
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); true
                 } catch (e: Exception) { false }
+            }
+            override fun onPageFinished(view: WebView?, url: String?) {
+                if (url != null && url.startsWith("file://")) prefs.edit().putString("lastUrl", url).apply()
             }
         }
 
         webView.addJavascriptInterface(BrowserBridge(), "AndroidBridge")
 
-        if (savedInstanceState == null) webView.loadUrl(START_URL)
+        if (savedInstanceState == null) {
+            // 콜드 스타트: 프로세스가 죽었다 살아나면 마지막 보던 페이지로 복원(진행은 localStorage 이어풀기)
+            val last = prefs.getString("lastUrl", null)
+            webView.loadUrl(if (last != null && last.startsWith("file://")) last else START_URL)
+        }
+        // savedInstanceState != null 이면 onRestoreInstanceState 의 restoreState 가 복원
 
-        // 하드웨어 뒤로가기: 페이지 히스토리(선택→CBT→시험) 따라 뒤로
+        // 하드웨어 뒤로가기: 페이지에 위임(문제풀기→CBT 홈), 홈/선택화면이면 네이티브 히스토리/종료
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webView.canGoBack()) webView.goBack()
-                else { isEnabled = false; onBackPressedDispatcher.onBackPressed() }
+                webView.evaluateJavascript("(window.__appBack&&window.__appBack())||'exit'") { res ->
+                    val r = res?.trim('"') ?: "exit"
+                    if (r != "handled") {
+                        if (webView.canGoBack()) webView.goBack() else finish()
+                    }
+                }
             }
         })
     }
 
-    /** AI 질문하기: 외부 브라우저로 GPT/Gemini/Claude 열기 (WebView 이탈 방지) */
+    /** AI 질문하기: 외부 브라우저로 GPT/Gemini/Claude 열기 */
     inner class BrowserBridge {
         @JavascriptInterface
         fun openUrl(url: String) {

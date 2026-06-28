@@ -691,7 +691,7 @@ function fmtExp(text){ return mdRich(expToMd(text)); }
 var S = null; // {list, answers{}, idx, mode, label, submitted}
 
 function $(id){return document.getElementById(id);}
-function show(sec){['home','quiz','results','study'].forEach(function(s){$(s).classList.toggle('hide', s!==sec);});}
+function show(sec){['home','quiz','results','study'].forEach(function(s){$(s).classList.toggle('hide', s!==sec);}); try{window.scrollTo(0,0);}catch(e){}}
 
 function goHome(){
   if(S && !S.submitted && Object.keys(S.answers).length>0){
@@ -823,11 +823,11 @@ function renderOMR(){
       c.classList.remove('answered');
       c.classList.add(S.answers[q.id]===q.ans?'ok':'no');
     }
-    c.onclick=function(){S.idx=k;renderQ();};
+    c.onclick=function(){S.idx=k;renderQ();try{window.scrollTo(0,0);}catch(e){}};
     o.appendChild(c);
   });
 }
-function move(d){var n=S.idx+d; if(n<0||n>=S.list.length)return; S.idx=n; renderQ();}
+function move(d){var n=S.idx+d; if(n<0||n>=S.list.length)return; S.idx=n; renderQ(); try{window.scrollTo(0,0);}catch(e){}}
 function clearAns(){var q=S.list[S.idx]; if(S.mode==='practice'&&S.submitted)return; delete S.answers[q.id]; renderQ(); updMeta();}
 
 /* ---------- submit / results ---------- */
